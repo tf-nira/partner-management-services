@@ -1,0 +1,1 @@
+ALTER TABLE pms.auth_policy_h ALTER COLUMN policy_file_id TYPE character varying(5120)

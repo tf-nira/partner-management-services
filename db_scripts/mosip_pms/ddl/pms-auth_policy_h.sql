@@ -22,7 +22,7 @@ CREATE TABLE pms.auth_policy_h(
 	policy_group_id character varying(36),
 	name character varying(128) NOT NULL,
 	descr character varying(256) NOT NULL,
-	policy_file_id character varying(5120) NOT NULL,
+	policy_file_id character varying(50000) NOT NULL,
 	policy_type character varying(36) NOT NULL,
 	version character varying(8) NOT NULL,
 	policy_schema character varying(5120),
