@@ -1,5 +1,7 @@
 \c mosip_pms 
 
+SET DateStyle = 'ISO, MDY';
+
 TRUNCATE TABLE pms.partner_type cascade ;
 \COPY pms.partner_type (code,partner_description,is_active,cr_by,cr_dtimes,is_policy_required) FROM './dml/pms-partner_type.csv' delimiter ',' HEADER  csv;
 
