@@ -70,6 +70,9 @@ public class PartnerH implements Serializable {
 	@Column(name = "addl_info")
 	private String additionalInfo;
 
+	@Column(name = "requires_payment")
+	private Boolean requiresPayment;
+
 	public PartnerH() {
 	}
 
@@ -195,6 +198,14 @@ public class PartnerH implements Serializable {
 	
 	public void setAdditionalInfo(String additionalInfo) {
 		this.additionalInfo = additionalInfo;
+	}
+
+	public Boolean getRequiresPayment() {
+		return this.requiresPayment;
+	}
+
+	public void setRequiresPayment(Boolean requiresPayment) {
+		this.requiresPayment = requiresPayment;
 	}
 
 	public void setPolicyGroupId(String policyGroupId) {

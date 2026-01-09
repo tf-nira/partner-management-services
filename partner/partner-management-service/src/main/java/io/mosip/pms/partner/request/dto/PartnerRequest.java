@@ -38,4 +38,8 @@ public class PartnerRequest{
 	public String partnerType;	
 	
 	public String langCode;
+
+	public Boolean requiresPayment;
+
+
 }
