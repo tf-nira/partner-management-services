@@ -16,7 +16,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import io.mosip.pms.payment.request.dto.PrnRequest;
+import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
+import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
+
 import javax.validation.Valid;
 
 @RestController
@@ -49,15 +52,15 @@ public class PaymentServiceController {
 
 
 
-//    @ResponseFilter
-//    @PostMapping("/validate/prn")
-//    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerspartnertypesearch())")
-//    @Operation(summary = "Service to validate prn", description = "Service to validate prn")
-//    public ResponseWrapper<PageResponseDto<PartnerType>> searchPartnerType(
-//            @RequestBody @Valid RequestWrapper<SearchDto> request) {
-//        ResponseWrapper<PageResponseDto<PartnerType>> responseWrapper = new ResponseWrapper<>();
-//        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_TYPE);
-//        responseWrapper.setResponse(partnerService.searchPartnerType(request.getRequest()));
-//        return responseWrapper;
-//    }
+    @ResponseFilter
+    @PostMapping("/validatePrn")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerspartnertypesearch())")
+    @Operation(summary = "Service to validate prn", description = "Service to validate prn")
+    public ResponseWrapper<ValidatePrnResponse> searchPartnerType(
+            @RequestBody @Valid RequestWrapper<ValidatePrnRequest> request) {
+        ResponseWrapper<ValidatePrnResponse> responseWrapper = new ResponseWrapper<>();
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_TYPE);
+        responseWrapper.setResponse(paymentService.validatePrn(request.getRequest()));
+        return responseWrapper;
+    }
 }

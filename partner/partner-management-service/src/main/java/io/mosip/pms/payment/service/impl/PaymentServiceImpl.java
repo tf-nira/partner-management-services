@@ -8,7 +8,9 @@ import io.mosip.pms.common.util.RestUtil;
 import io.mosip.pms.partner.response.dto.CACertificateResponseDto;
 import io.mosip.pms.partner.service.impl.PartnerServiceImpl;
 import io.mosip.pms.payment.request.dto.PrnRequest;
+import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
+import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
 import io.mosip.pms.payment.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -93,8 +95,18 @@ public class PaymentServiceImpl implements PaymentService {
 
 
 
-    public PrnResponse validatePrn(PrnRequest request){
-        return null;
+    public ValidatePrnResponse validatePrn(ValidatePrnRequest request){
+    	
+    	Map<String, Object> apiResponse = restUtil.postApi(environment.getProperty("pmp.prn.validate.rest.uri"), null,
+                "", "", MediaType.APPLICATION_JSON, request, Map.class
+        );
+    	
+    	ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.convertValue(apiResponse, ValidatePrnResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("PRN validation failed", e);
+        }
     }
 
 }
