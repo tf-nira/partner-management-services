@@ -15,16 +15,17 @@ public class PartnerPrn implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    @Id
+
     @Column(name = "partner_id", nullable = false, length = 36)
     private String partnerId;
 
+    @Id
     @Column(name = "prn", nullable = false, length = 255)
     private String prn;
 
     @Column(name = "status", nullable = false, length = 50)
     private String status;
-    // GENERATED, VALIDATED-PAID, FAILED, SETTLED
+
 
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
