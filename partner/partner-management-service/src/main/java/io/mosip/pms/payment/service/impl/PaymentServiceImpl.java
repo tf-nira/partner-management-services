@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Map;
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -55,8 +56,6 @@ public class PaymentServiceImpl implements PaymentService {
                 request,
                 Map.class
         );
-
-        // Log full API response safely
         try {
             LOGGER.info("PRN API full response:\n{}",
                     mapper.writerWithDefaultPrettyPrinter()
@@ -64,11 +63,7 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (JsonProcessingException e) {
             LOGGER.error("Failed to serialize PRN API response for logging", e);
         }
-
-        // Convert Map -> PrnResponse
         PrnResponse prnResponse = mapper.convertValue(apiResponse, PrnResponse.class);
-
-        // Optional safety check
         if (prnResponse.getResponse() == null) {
             LOGGER.error("Failed to serialize PRN API response for logging");
         }
@@ -78,8 +73,39 @@ public class PaymentServiceImpl implements PaymentService {
                 partnerPrnRepository.save(partnerPrn);
             }
         }
-
         return prnResponse;
+    }
+
+    public ValidatePrnResponse validatePrn(ValidatePrnRequest request){
+
+        Map<String, Object> apiResponse = restUtil.postApi(environment.getProperty("pmp.prn.validate.rest.uri"), null,
+                "", "", MediaType.APPLICATION_JSON, request, Map.class
+        );
+
+        ObjectMapper mapper = new ObjectMapper();
+
+        ValidatePrnResponse validatePrnResponse = mapper.convertValue(apiResponse, ValidatePrnResponse.class);
+        if(validatePrnResponse.getResponse()== null){
+            LOGGER.error("Failed to serialize PRN API response for logging");
+        }
+        else{
+            if(validatePrnResponse.getResponse().getStatusCode().equalsIgnoreCase("A")){
+                PartnerPrn partnerPrn = getpartnerprndetails(request.getPrn());
+                partnerPrn.setStatus("VALIDATED-NOT_PAID");
+                partnerPrn.setRemarks("Amount not paid");
+                partnerPrn.setUpdBy((getLoggedInUserId()));
+                partnerPrn.setUpdDtimes(Timestamp.valueOf(LocalDateTime.now()).toLocalDateTime());
+                partnerPrnRepository.save(partnerPrn);
+            } else if (validatePrnResponse.getResponse().getStatusCode().equalsIgnoreCase("T")) {
+                PartnerPrn partnerPrn = getpartnerprndetails(request.getPrn());
+                partnerPrn.setStatus("VALIDATED-PAID");
+                partnerPrn.setRemarks("Amount paid");
+                partnerPrn.setUpdBy((getLoggedInUserId()));
+                partnerPrn.setUpdDtimes(Timestamp.valueOf(LocalDateTime.now()).toLocalDateTime());
+                partnerPrnRepository.save(partnerPrn);
+            }
+        }
+        return validatePrnResponse;
     }
 
     private PartnerPrn mapPartnerPrnFromRequest(PrnRequest request, PrnResponse response){
@@ -95,27 +121,13 @@ public class PaymentServiceImpl implements PaymentService {
         return partnerPrn;
     }
 
-    public ValidatePrnResponse validatePrn(ValidatePrnRequest request){
-    	
-    	Map<String, Object> apiResponse = restUtil.postApi(environment.getProperty("pmp.prn.validate.rest.uri"), null,
-                "", "", MediaType.APPLICATION_JSON, request, Map.class
-        );
-    	
-    	ObjectMapper mapper = new ObjectMapper();
-        try {
-            return mapper.convertValue(apiResponse, ValidatePrnResponse.class);
-        } catch (Exception e) {
-            throw new RuntimeException("PRN validation failed", e);
-        }
+    private PartnerPrn getpartnerprndetails(String prn){
+        return partnerPrnRepository.findByPrn(prn);
     }
-
 
     private String getLoggedInUserId() {
         return UserDetailUtil.getLoggedInUserId();
     }
 
-    private String getLoggedInUserEmail() {
-        return UserDetailUtil.getLoggedInUserDetails() != null ? UserDetailUtil.getLoggedInUserDetails().getMail()
-                : null;
-    }
+
 }
