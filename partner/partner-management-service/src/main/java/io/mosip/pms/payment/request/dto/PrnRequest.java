@@ -13,4 +13,10 @@ public class PrnRequest {
 
     public String fullName;
 
+    @NotBlank(message="value is empty or null")
+    public String partnerId;
+
+    @NotBlank(message="value is empty or null")
+    String serviceCode;
+
 }

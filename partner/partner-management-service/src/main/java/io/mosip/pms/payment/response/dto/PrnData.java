@@ -2,6 +2,8 @@ package io.mosip.pms.payment.response.dto;
 
 import lombok.Data;
 
+import java.math.BigDecimal;
+
 @Data
 public class PrnData {
 
@@ -10,6 +12,6 @@ public class PrnData {
     private String expiryDate;
     private String prn;
     private String searchCode;
-    private String amount;
+    private BigDecimal amount;
     private String currency;
 }
