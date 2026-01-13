@@ -1,0 +1,158 @@
+package io.mosip.pms.test.payment.controller;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.junit.Test;
+import io.mosip.pms.payment.controller.PaymentServiceController;
+import io.mosip.pms.payment.request.dto.PrnRequest;
+import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
+import io.mosip.pms.payment.response.dto.PrnResponse;
+import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
+import io.mosip.pms.common.request.dto.RequestWrapper;
+import io.mosip.pms.payment.service.PaymentService;
+import io.mosip.pms.device.util.AuditUtil;
+
+import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+import org.springframework.http.MediaType;
+
+
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+
+import java.math.BigDecimal;
+import java.time.ZoneOffset;
+import java.time.ZonedDateTime;
+
+@RunWith(SpringRunner.class)
+@WebMvcTest(PaymentServiceController.class)
+@AutoConfigureMockMvc
+public class PaymentServiceControllerTest {
+
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private PaymentService paymentService;
+
+    @MockBean
+    private AuditUtil auditUtil;
+
+    @Autowired
+    private ObjectMapper objectMapper;
+
+    @Test
+    @WithMockUser(roles = {"PARTNER"})
+    public void testGeneratePrnSuccess() throws Exception {
+
+        PrnRequest prnRequest = new PrnRequest();
+        prnRequest.setService("PAYMENT");
+        prnRequest.setPartnerId("mosip");
+        prnRequest.setServiceCode("IDA");
+        prnRequest.setNin("1234567890");
+        prnRequest.setFullName("Test User");
+
+        RequestWrapper<PrnRequest> request = new RequestWrapper<>();
+        request.setRequest(prnRequest);
+        request.setId("mosip.pms.generate.prn");
+        request.setVersion("1.0");
+        request.setRequesttime(ZonedDateTime.now(ZoneOffset.UTC).toLocalDateTime());
+        request.setMetadata("{}");
+
+        PrnResponse prnResponse = new PrnResponse();
+        prnResponse.setId("mosip.pms.generate.prn");
+        prnResponse.setVersion("1.0");
+        
+        Mockito.when(paymentService.generatePrn(prnRequest))
+        		.thenReturn(prnResponse);
+
+        mockMvc.perform(post("/partners/generatePrn")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = {"PARTNER"})
+    public void testValidatePartnerPrnSuccess() throws Exception {
+
+        ValidatePrnRequest validateRequest = new ValidatePrnRequest();
+        validateRequest.setPrn("2240015260462");
+        validateRequest.setPartnerId("mosip");
+        validateRequest.setServiceCode("IDA");
+        validateRequest.setAmount(new BigDecimal("100"));
+
+        RequestWrapper<ValidatePrnRequest> wrapper = new RequestWrapper<>();
+        wrapper.setRequest(validateRequest);
+
+        ValidatePrnResponse response = new ValidatePrnResponse();
+        response.setId("mosip.pms.validate.prn");
+        response.setVersion("1.0");
+
+        Mockito.when(paymentService.validatePrn(validateRequest))
+        		.thenReturn(response);
+
+        mockMvc.perform(post("/partners/validatePrn")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(objectMapper.writeValueAsString(wrapper)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = {"PARTNER"})
+    public void testGeneratePrnFailure() throws Exception {
+
+        PrnRequest prnRequest = new PrnRequest();
+        prnRequest.setService("PAYMENT");
+        prnRequest.setPartnerId("mosip");
+        prnRequest.setServiceCode("IDA");
+        prnRequest.setNin("1234567890");
+        prnRequest.setFullName("Test User");
+
+        RequestWrapper<PrnRequest> request = new RequestWrapper<>();
+        request.setRequest(prnRequest);
+
+        Mockito.when(paymentService.generatePrn(prnRequest))
+                .thenThrow(new RuntimeException("PRN generation failed"));
+
+        mockMvc.perform(post("/partners/generatePrn")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk()) // because controller wraps error in response body
+                .andExpect(jsonPath("$.errors").exists());
+    }
+
+    @Test
+    @WithMockUser(roles = {"PARTNER"})
+    public void testValidatePartnerPrnFailure() throws Exception {
+
+        ValidatePrnRequest validateRequest = new ValidatePrnRequest();
+        validateRequest.setPrn("2240015260462");
+        validateRequest.setPartnerId("mosip");
+        validateRequest.setServiceCode("IDA");
+        validateRequest.setAmount(new BigDecimal("100"));
+
+        RequestWrapper<ValidatePrnRequest> wrapper = new RequestWrapper<>();
+        wrapper.setRequest(validateRequest);
+
+        Mockito.when(paymentService.validatePrn(validateRequest))
+                .thenThrow(new RuntimeException("Invalid PRN"));
+
+        mockMvc.perform(post("/partners/validatePrn")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(wrapper)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").exists());
+    }
+
+}
