@@ -16,37 +16,37 @@ public class PartnerPaymentTransactions implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "transaction_id", nullable = false, length = 36)
+    @Column(name = "transaction_id", nullable = false)
     private String transactionId;
     // PRN, auth transaction ID
 
-    @Column(name = "partner_id", nullable = false, length = 36)
+    @Column(name = "partner_id", nullable = false)
     private String partnerId;
 
-    @Column(name = "entry_type", nullable = false, length = 20)
+    @Column(name = "entry_type", nullable = false)
     private String entryType;
     // DEBIT, CREDIT
 
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "source_system", nullable = false, length = 50)
+    @Column(name = "source_system", nullable = false)
     private String sourceSystem;
     // IDA, PMS
 
-    @Column(name = "description", nullable = false, length = 500)
+    @Column(name = "description", nullable = false)
     private String description;
 
     @Column(name = "log_dtimes", nullable = false)
     private LocalDateTime logDtimes;
 
-    @Column(name = "cr_by", nullable = false, length = 50)
+    @Column(name = "cr_by", nullable = false)
     private String crBy;
 
     @Column(name = "cr_dtimes", nullable = false)
     private LocalDateTime crDtimes;
 
-    @Column(name = "upd_by", length = 50)
+    @Column(name = "upd_by")
     private String updBy;
 
     @Column(name = "upd_dtimes")

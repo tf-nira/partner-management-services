@@ -16,19 +16,19 @@ public class PartnerBalance implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @Column(name = "partner_id", nullable = false, length = 36)
+    @Column(name = "partner_id", nullable = false)
     private String partnerId;
 
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
     private BigDecimal balance;
 
-    @Column(name = "cr_by", nullable = false, length = 50)
+    @Column(name = "cr_by", nullable = false)
     private String crBy;
 
     @Column(name = "cr_dtimes", nullable = false)
     private LocalDateTime crDtimes;
 
-    @Column(name = "upd_by", length = 50)
+    @Column(name = "upd_by")
     private String updBy;
 
     @Column(name = "upd_dtimes")
