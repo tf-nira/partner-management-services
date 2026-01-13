@@ -144,5 +144,7 @@ public class AuthorizedRolesDto {
 	private List<String> postmispfiltervalues;
 	
 	private List<String> postmispsearch;
+	
+	private List<String> postpartnerpayment;
 		
 }
