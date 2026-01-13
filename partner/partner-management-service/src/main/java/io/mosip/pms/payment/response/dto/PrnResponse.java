@@ -2,6 +2,8 @@ package io.mosip.pms.payment.response.dto;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class PrnResponse {
 
@@ -9,5 +11,5 @@ public class PrnResponse {
     private String version;
     private String responsetime;
     private PrnInnerResponse response;
-    private Object errors;
+    private List<ErrorDTO> errors;
 }
