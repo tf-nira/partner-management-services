@@ -4,46 +4,44 @@ import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "partner_prn")
+@IdClass(PartnerPrnId.class)
 public class PartnerPrn implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-
-    @Column(name = "partner_id", nullable = false, length = 36)
+    @Id
+    @Column(name = "partner_id", nullable = false)
     private String partnerId;
 
     @Id
-    @Column(name = "prn", nullable = false, length = 255)
+    @Column(name = "prn", nullable = false)
     private String prn;
 
-    @Column(name = "status", nullable = false, length = 50)
+    @Column(name = "status", nullable = false)
     private String status;
 
 
     @Column(name = "amount", nullable = false, precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @Column(name = "service_code", nullable = false, length = 50)
+    @Column(name = "service_code", nullable = false)
     private String serviceCode;
     // IDA, ID Repo
 
-    @Column(name = "remarks", nullable = false, length = 500)
+    @Column(name = "remarks", nullable = false)
     private String remarks;
 
-    @Column(name = "cr_by", nullable = false, length = 50)
+    @Column(name = "cr_by", nullable = false)
     private String crBy;
 
     @Column(name = "cr_dtimes", nullable = false)
     private LocalDateTime crDtimes;
 
-    @Column(name = "upd_by", length = 50)
+    @Column(name = "upd_by")
     private String updBy;
 
     @Column(name = "upd_dtimes")

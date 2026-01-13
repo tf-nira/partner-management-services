@@ -39,12 +39,12 @@ public class PaymentServiceController {
             consumes = MediaType.APPLICATION_JSON_VALUE,
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerspartnertypesearch())")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerpayment())")
     @Operation(summary = "Service to generate PRN", description = "Generates a PRN for a given request")
     public ResponseWrapper<PrnResponse> generatePrn(
             @RequestBody @Valid RequestWrapper<PrnRequest> request) {
 
-        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_TYPE);
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PARTNER_PRN);
         ResponseWrapper<PrnResponse> responseWrapper = new ResponseWrapper<>();
         responseWrapper.setResponse(paymentService.generatePrn(request.getRequest()));
         return responseWrapper;
