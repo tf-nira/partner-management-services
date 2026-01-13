@@ -1,7 +1,6 @@
 package io.mosip.pms.payment.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
-import io.mosip.pms.common.constant.ApiAccessibleExceptionConstant;
 import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
 import io.mosip.pms.common.repository.PartnerBalanceRepository;
@@ -21,45 +20,29 @@ import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
 import io.mosip.pms.payment.service.PaymentService;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
-
-import javax.persistence.EntityNotFoundException;
 import java.math.BigDecimal;
-import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Optional;
 
 @Service
 @Transactional
+@RequiredArgsConstructor
 public class PaymentServiceImpl implements PaymentService {
     private static final Logger LOGGER = PMSLogger.getLogger(PaymentServiceImpl.class);
-
-    @Autowired
-    RestUtil restUtil;
-
-    @Autowired
-    private ObjectMapper mapper;
-
-    @Autowired
-    PartnerPrnRepository partnerPrnRepository;
-
-    @Autowired
-    PartnerServiceRepository partnerRepository;
-
-    @Autowired
-    PartnerPaymentTransactionsRepository paymentRepository;
-
-    @Autowired
-    PartnerBalanceRepository balanceRepository;
-
-    @Autowired
-    AuditUtil auditUtil;
+    private final RestUtil restUtil;
+    private final ObjectMapper mapper;
+    private final PartnerPrnRepository partnerPrnRepository;
+    private final PartnerServiceRepository partnerRepository;
+    private final PartnerPaymentTransactionsRepository paymentRepository;
+    private final PartnerBalanceRepository balanceRepository;
+    private final AuditUtil auditUtil;
 
     @Value("${pmp.prn.generate.rest.uri}")
     private String generatePrnUrl;
@@ -88,6 +71,7 @@ public class PaymentServiceImpl implements PaymentService {
                     partnerPrnRepository.save(partnerPrn);
                 } catch (Exception dbEx) {
                     LOGGER.error("PRN generated but failed to save to local DB: {}", dbEx.getMessage());
+                    throw new ApiAccessibleException("DB_ERROR", "PRN generated but failed to persist");
                 }
             }
             return prnResponse;
@@ -105,57 +89,61 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    /**
-     * Null-safe check for nested PRN data
-     */
-    private boolean isPrnPresent(PrnResponse response) {
-        return response != null
-                && response.getResponse() != null
-                && response.getResponse().getData() != null
-                && response.getResponse().getData().getPrn() != null;
-    }
-
-    public ValidatePrnResponse validatePrn(ValidatePrnRequest request){
-        Partner partnerData = getValidPartner(request.getPartnerId(),false);
+    public ValidatePrnResponse validatePrn(ValidatePrnRequest request) {
+        Partner partnerData = getValidPartner(request.getPartnerId(), false);
         ValidatePrnResponse validatePrnResponse = null;
         try {
-            Map<String, Object> apiResponse = restUtil.postApi(validatePrnUrl, null,
-                    "", "", MediaType.APPLICATION_JSON, request, Map.class);
-            validatePrnResponse = mapper.convertValue(apiResponse, ValidatePrnResponse.class);
-        } catch (Exception e) {
-            LOGGER.error("Error occured while parsing the response from template api", e.getLocalizedMessage());
-        }
-        if(validatePrnResponse == null) {
-            throw new ApiAccessibleException(ApiAccessibleExceptionConstant.TEMPLATE_NOT_FOUND.getErrorCode(),
-                    ApiAccessibleExceptionConstant.TEMPLATE_NOT_FOUND.getErrorMessage());
-        }
-
-        if(validatePrnResponse.getResponse().getStatusCode().equalsIgnoreCase(PaymentConstants.NOTPAID_STATUSCODE)){
-            PartnerPrn partnerPrn = getpartnerprndetails(request.getPrn(), request.getPartnerId());
-            partnerPrn.setStatus(PaymentConstants.VALIDATED_NOT_PAID);
-            partnerPrn.setRemarks(PaymentConstants.AMOUNT_NOT_PAID);
-            partnerPrn.setUpdBy((getLoggedInUserId()));
-            partnerPrn.setUpdDtimes(LocalDateTime.now());
-            partnerPrnRepository.save(partnerPrn);
-        } else if (validatePrnResponse.getResponse().getStatusCode().equalsIgnoreCase(PaymentConstants.PAID_STATUSCODE)) {
-            PartnerPrn partnerPrn = getpartnerprndetails(request.getPrn(), request.getPartnerId());
-            partnerPrn.setStatus(PaymentConstants.VALIDATED_PAID);
-            partnerPrn.setRemarks(PaymentConstants.AMOUNT_PAID);
-            partnerPrn.setUpdBy((getLoggedInUserId()));
-            partnerPrn.setUpdDtimes(LocalDateTime.now());
-            partnerPrnRepository.save(partnerPrn);
-            Boolean isTransactionAlreadyExist = paymentRepository.isTransactionAlreadyExist(request.getPrn());
-            if(!isTransactionAlreadyExist){
-                PartnerPaymentTransactions transaction = mapTransactionFromResponse(request,validatePrnResponse);
-                paymentRepository.save(transaction);
-                addBalance(request,validatePrnResponse);
+            Map<String, Object> apiResponse = restUtil.postApi(
+                    validatePrnUrl, null, "", "",
+                    MediaType.APPLICATION_JSON, request, Map.class);
+            if (apiResponse == null) {
+                throw new ApiAccessibleException("API_ERROR", "Provider returned no response");
             }
+            validatePrnResponse = mapper.convertValue(apiResponse, ValidatePrnResponse.class);
+
+        } catch (Exception e) {
+            LOGGER.error("PRN Validation API failed for PRN {}: {}", request.getPrn(), e.getMessage());
+            throw new ApiAccessibleException("INTERNAL_SERVER_ERROR", "An unexpected error occurred processing the PRN");
 
         }
+        if (validatePrnResponse == null || validatePrnResponse.getResponse() == null) {
+            throw new ApiAccessibleException("INVALID_RESPONSE", "Invalid structure in validation response");
+        }
+        String statusCode = validatePrnResponse.getResponse().getStatusCode();
+        processDatabaseUpdates(request, validatePrnResponse, statusCode);
+
         return validatePrnResponse;
     }
 
-private void addBalance(ValidatePrnRequest request, ValidatePrnResponse response) {
+    private void processDatabaseUpdates(ValidatePrnRequest request, ValidatePrnResponse response, String statusCode) {
+        PartnerPrn partnerPrn = getpartnerprndetails(request.getPrn(), request.getPartnerId());
+        partnerPrn.setUpdBy(getLoggedInUserId());
+        partnerPrn.setUpdDtimes(LocalDateTime.now());
+
+        if (statusCode.equalsIgnoreCase(PaymentConstants.NOTPAID_STATUSCODE)) {
+            partnerPrn.setStatus(PaymentConstants.VALIDATED_NOT_PAID);
+            partnerPrn.setRemarks(PaymentConstants.AMOUNT_NOT_PAID);
+            partnerPrnRepository.save(partnerPrn);
+
+        } else if (statusCode.equalsIgnoreCase(PaymentConstants.PAID_STATUSCODE)) {
+            partnerPrn.setStatus(PaymentConstants.VALIDATED_PAID);
+            partnerPrn.setRemarks(PaymentConstants.AMOUNT_PAID);
+            partnerPrnRepository.save(partnerPrn);
+
+            if (!paymentRepository.isTransactionAlreadyExist(request.getPrn())) {
+                PartnerPaymentTransactions transaction = mapTransactionFromResponse(request, response);
+                paymentRepository.save(transaction);
+                addBalance(request, response);
+                LOGGER.info("Successfully processed payment and balance for PRN: {}", request.getPrn());
+            }
+        }
+        else {
+            LOGGER.warn("Unknown payment status {} for PRN {}", statusCode, request.getPrn());
+        }
+
+    }
+
+    private void addBalance(ValidatePrnRequest request, ValidatePrnResponse response) {
     BigDecimal creditedAmount = Optional.ofNullable(response.getResponse().getAmountPaid())
             .orElse(BigDecimal.ZERO);
     PartnerBalance balanceDetails = balanceRepository.findById(request.getPartnerId())
@@ -171,6 +159,13 @@ private void addBalance(ValidatePrnRequest request, ValidatePrnResponse response
             });
     balanceRepository.save(balanceDetails);
 }
+
+    private boolean isPrnPresent(PrnResponse response) {
+        return response != null
+                && response.getResponse() != null
+                && response.getResponse().getData() != null
+                && response.getResponse().getData().getPrn() != null;
+    }
 
     private PartnerBalance mapBalanceDetails(ValidatePrnRequest request, ValidatePrnResponse response){
         PartnerBalance balanceDetails = new PartnerBalance();
@@ -208,13 +203,12 @@ private void addBalance(ValidatePrnRequest request, ValidatePrnResponse response
         return transaction;
     }
 
-    private PartnerPrn getpartnerprndetails(String prn , String partnerId){
+    private PartnerPrn getpartnerprndetails(String prn, String partnerId) {
         PartnerPrnId id = new PartnerPrnId(partnerId, prn);
         return partnerPrnRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Record not found for id: " + id));
+                .orElseThrow(() -> new ApiAccessibleException("PRN_NOT_FOUND", "PRN not found for partner"));
     }
 
-    
     private String getLoggedInUserId() {
         return UserDetailUtil.getLoggedInUserId();
     }
