@@ -54,12 +54,12 @@ public class PaymentServiceController {
 
     @ResponseFilter
     @PostMapping("/validatePrn")
-    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerspartnertypesearch())")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerpayment())")
     @Operation(summary = "Service to validate prn", description = "Service to validate prn")
-    public ResponseWrapper<ValidatePrnResponse> searchPartnerType(
+    public ResponseWrapper<ValidatePrnResponse> validatePartnerPrn(
             @RequestBody @Valid RequestWrapper<ValidatePrnRequest> request) {
         ResponseWrapper<ValidatePrnResponse> responseWrapper = new ResponseWrapper<>();
-        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_TYPE);
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PARTNER_PRN);
         responseWrapper.setResponse(paymentService.validatePrn(request.getRequest()));
         return responseWrapper;
     }

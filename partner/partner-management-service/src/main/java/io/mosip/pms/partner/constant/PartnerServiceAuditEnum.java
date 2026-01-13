@@ -183,7 +183,14 @@ public enum PartnerServiceAuditEnum {
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
 	MAP_POLICY_PARTNER_FAILURE("PMS_PRT_422", AuditConstant.AUDIT_SYSTEM, "POST REQUEST FOR POLICY MAP",
 			"Requesting for policy mapping failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	GENERATE_PARTNER_PRN("PMS_PRT_300", AuditConstant.AUDIT_SYSTEM, "POST GENERATE PARTNER PRN",
+			"Generating Partner PRN", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	VALIDATE_PARTNER_PRN("PMS_PRT_301", AuditConstant.AUDIT_SYSTEM, "POST VALIDATE PARTNER PRN",
+			"Validating Partner PRN", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);
+	
 	
 	private final String eventId;
 
