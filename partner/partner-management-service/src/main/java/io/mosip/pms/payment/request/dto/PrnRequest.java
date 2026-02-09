@@ -1,5 +1,7 @@
 package io.mosip.pms.payment.request.dto;
 
+import java.math.BigDecimal;
+
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
 
@@ -12,10 +14,13 @@ public class PrnRequest {
 
     public String fullName;
 
+    public String remarks;
+    
+    private BigDecimal amount;
+
     @NotBlank(message="value is empty or null")
     public String partnerId;
 
-    @NotBlank(message="value is empty or null")
-    String serviceCode;
+    private String serviceCode;
 
 }
