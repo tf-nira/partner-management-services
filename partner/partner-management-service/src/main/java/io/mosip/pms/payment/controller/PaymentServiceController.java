@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import io.mosip.pms.payment.constant.PaymentServiceAuditEnum;
 import io.mosip.pms.payment.request.dto.PrnRequest;
 import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
@@ -44,7 +46,7 @@ public class PaymentServiceController {
     public ResponseWrapper<PrnResponse> generatePrn(
             @RequestBody @Valid RequestWrapper<PrnRequest> request) {
 
-        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PARTNER_PRN);
+        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.GENERATE_PARTNER_PRN);
         ResponseWrapper<PrnResponse> responseWrapper = new ResponseWrapper<>();
         responseWrapper.setResponse(paymentService.generatePrn(request.getRequest()));
         return responseWrapper;
@@ -59,7 +61,7 @@ public class PaymentServiceController {
     public ResponseWrapper<ValidatePrnResponse> validatePartnerPrn(
             @RequestBody @Valid RequestWrapper<ValidatePrnRequest> request) {
         ResponseWrapper<ValidatePrnResponse> responseWrapper = new ResponseWrapper<>();
-        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PARTNER_PRN);
+        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.VALIDATE_PARTNER_PRN);
         responseWrapper.setResponse(paymentService.validatePrn(request.getRequest()));
         return responseWrapper;
     }

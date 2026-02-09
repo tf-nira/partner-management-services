@@ -48,6 +48,7 @@ public enum ErrorCode {
 	API_NULL_RESPONSE_EXCEPTION("PMS_PRT_107","Responese from the api is null"),
 	UNABLE_TO_PROCESS("PMS_PRT_500","Unable to process the request."),
 	PARTNER_NOT_ACTIVE_EXCEPTION("PMS_PMP_016","Partner is not active."),
+	PARTNER_NOT_REQUIRED_PAYMENT_EXCEPTION("PMS_PMP_017","Payment is not required for this partner."),
 	POLICY_GROUP_POLICY_NOT_EXISTS("PMS_PRT_098","Given policy under partner's policy group not exists."),
 	POLICY_NOT_ACTIVE_EXCEPTION("PMS_PMP_019","Policy is not active."),
 	POLICY_GROUP_NOT_ACTIVE("PMS_PMP_023","Policy group is not active."),
