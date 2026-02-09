@@ -1,8 +1,11 @@
 package io.mosip.pms.payment.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.pms.common.constant.EventType;
+import io.mosip.pms.common.dto.Type;
 import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
+import io.mosip.pms.common.helper.WebSubPublisher;
 import io.mosip.pms.common.repository.PartnerBalanceRepository;
 import io.mosip.pms.common.repository.PartnerPaymentTransactionsRepository;
 import io.mosip.pms.common.repository.PartnerPrnRepository;
@@ -12,6 +15,7 @@ import io.mosip.pms.common.util.RestUtil;
 import io.mosip.pms.common.util.UserDetailUtil;
 import io.mosip.pms.device.util.AuditUtil;
 import io.mosip.pms.partner.constant.ErrorCode;
+import io.mosip.pms.partner.constant.PartnerConstants;
 import io.mosip.pms.partner.constant.PartnerServiceAuditEnum;
 import io.mosip.pms.partner.exception.PartnerServiceException;
 import io.mosip.pms.payment.constant.PaymentConstants;
@@ -22,6 +26,7 @@ import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
 import io.mosip.pms.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -29,6 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -44,6 +50,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final PartnerPaymentTransactionsRepository paymentRepository;
     private final PartnerBalanceRepository balanceRepository;
     private final AuditUtil auditUtil;
+    private final WebSubPublisher webSubPublisher;
 
     @Value("${pmp.prn.generate.rest.uri}")
     private String generatePrnUrl;
@@ -51,9 +58,20 @@ public class PaymentServiceImpl implements PaymentService {
     @Value("${pmp.prn.validate.rest.uri}")
     private String validatePrnUrl;
 
+    @Value("${pmp.prn.minimumBalanceRequired.value}")
+    private BigDecimal minimumBalanceRequired;
+
 
     public PrnResponse generatePrn(PrnRequest request) {
         Partner partnerData = getValidPartner(request.getPartnerId(), false);
+        if(request.getAmount().compareTo(minimumBalanceRequired) < 0){
+            BigDecimal currentBalance = getBalance(request.getPartnerId());
+            BigDecimal accumulatedBalance = currentBalance.add(request.getAmount());
+            if(accumulatedBalance.compareTo(minimumBalanceRequired)< 0){
+                throw new PartnerServiceException(ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorCode(),
+                        ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorMessage());
+            }
+        }
         if (request.getServiceCode() == null || request.getServiceCode().isEmpty()) {
         	auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.GENERATE_PRN_DEFAULT_SERVICE_CODE, "IDA", "serviceCode");
             request.setServiceCode("IDA");
@@ -183,7 +201,15 @@ public class PaymentServiceImpl implements PaymentService {
                 return mapBalanceDetails(request, response);
             });
     balanceRepository.save(balanceDetails);
+    notify(balanceDetails,response.getResponse().getAmountPaid());
 }
+
+    private BigDecimal getBalance(String partnerId) {
+        return balanceRepository.findById(partnerId)
+                .map(balance -> Optional.ofNullable(balance.getBalance())
+                        .orElse(BigDecimal.ZERO))
+                .orElse(BigDecimal.ZERO);
+    }
 
     private boolean isPrnPresent(PrnResponse response) {
         return response != null
@@ -258,6 +284,16 @@ public class PaymentServiceImpl implements PaymentService {
             }
         }
         return partnerById.get();
+    }
+
+    private void notify(PartnerBalance balanceDetails, BigDecimal addedAmount) {
+        Type type = new Type();
+        type.setName("PaymentServiceImpl");
+        type.setNamespace("io.mosip.pms.payment.service.impl.PaymentServiceImpl");
+        Map<String, Object> data = new HashMap<>();
+        data.put(PartnerConstants.CREDITED_AMOUNT, addedAmount);
+        data.put(PartnerConstants.UPDATED_BALANCE_DATA,balanceDetails);
+        webSubPublisher.notify(EventType.PARTNERS_AMOUNT, data, type);
     }
 
 }

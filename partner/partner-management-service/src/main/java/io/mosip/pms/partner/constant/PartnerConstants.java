@@ -22,7 +22,11 @@ public final class PartnerConstants {
 
 	public static final String DEACTIVE = "De-active";
 	
-	public static final String PARTNER_DATA = "partnerData"; 
+	public static final String PARTNER_DATA = "partnerData";
+
+	public static final String CREDITED_AMOUNT = "creditedAmount";
+
+	public static final String UPDATED_BALANCE_DATA = "updatedBalanceData";
 	
 	public static final String MISP_DATA = "mispLicenseData";
 	
