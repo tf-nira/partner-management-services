@@ -44,6 +44,7 @@ import io.mosip.pms.device.exception.DeviceServiceException;
 import io.mosip.pms.device.util.dto.AuditRequestDto;
 import io.mosip.pms.device.util.dto.AuditResponseDto;
 import io.mosip.pms.partner.constant.PartnerServiceAuditEnum;
+import io.mosip.pms.payment.constant.PaymentServiceAuditEnum;
 
 @Component
 public class AuditUtil {
@@ -380,5 +381,49 @@ public class AuditUtil {
 		auditRequestDto.setModuleName(clientServiceAuditEnum.getModuleName());
 		auditRequestDto.setEventId(clientServiceAuditEnum.getEventId());
 		callAuditManager(auditRequestDto);
+	}
+
+	public void setAuditRequestDto(PaymentServiceAuditEnum partnerPaymentEnum) {
+		AuditRequestDto auditRequestDto = new AuditRequestDto();
+		auditRequestDto.setHostIp(hostIpAddress);
+		auditRequestDto.setHostName(hostName);
+		auditRequestDto.setApplicationId(partnerPaymentEnum.getApplicationId());
+		auditRequestDto.setApplicationName(partnerPaymentEnum.getApplicationName());
+		auditRequestDto.setSessionUserId(SecurityContextHolder.getContext().getAuthentication().getName());
+		auditRequestDto.setSessionUserName(SecurityContextHolder.getContext().getAuthentication().getName());
+		auditRequestDto.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+		auditRequestDto.setActionTimeStamp(DateUtils.getUTCCurrentDateTime());
+		auditRequestDto.setDescription(partnerPaymentEnum.getDescription());
+		auditRequestDto.setEventType(partnerPaymentEnum.getType());
+		auditRequestDto.setEventName(partnerPaymentEnum.getName());
+		auditRequestDto.setModuleId(partnerPaymentEnum.getModuleId());
+		auditRequestDto.setModuleName(partnerPaymentEnum.getModuleName());
+		auditRequestDto.setEventId(partnerPaymentEnum.getEventId());
+		auditRequestDto.setId(partnerPaymentEnum.getId());
+		auditRequestDto.setIdType(partnerPaymentEnum.getIdType());
+		callAuditManager(auditRequestDto);
+		
+	}
+
+	public void setAuditRequestDto(PaymentServiceAuditEnum partnerPaymentEnum, String refId, String refIdType) {
+		AuditRequestDto auditRequestDto = new AuditRequestDto();
+		auditRequestDto.setHostIp(hostIpAddress);
+		auditRequestDto.setHostName(hostName);
+		auditRequestDto.setApplicationId(partnerPaymentEnum.getApplicationId());
+		auditRequestDto.setApplicationName(partnerPaymentEnum.getApplicationName());
+		auditRequestDto.setSessionUserId(SecurityContextHolder.getContext().getAuthentication().getName());
+		auditRequestDto.setSessionUserName(SecurityContextHolder.getContext().getAuthentication().getName());
+		auditRequestDto.setCreatedBy(SecurityContextHolder.getContext().getAuthentication().getName());
+		auditRequestDto.setActionTimeStamp(DateUtils.getUTCCurrentDateTime());
+		auditRequestDto.setDescription(partnerPaymentEnum.getDescription());
+		auditRequestDto.setEventType(partnerPaymentEnum.getType());
+		auditRequestDto.setEventName(partnerPaymentEnum.getName());
+		auditRequestDto.setModuleId(partnerPaymentEnum.getModuleId());
+		auditRequestDto.setModuleName(partnerPaymentEnum.getModuleName());
+		auditRequestDto.setEventId(partnerPaymentEnum.getEventId());
+		auditRequestDto.setId(refId);
+		auditRequestDto.setIdType(refIdType);
+		callAuditManager(auditRequestDto);
+		
 	}
 }
