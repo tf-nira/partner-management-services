@@ -111,3 +111,11 @@ COMMENT ON COLUMN pms.partner.upd_by IS 'Updated By : ID or name of the user who
 -- ddl-end --
 COMMENT ON COLUMN pms.partner.upd_dtimes IS 'Updated DateTimestamp : Date and Timestamp when any of the fields in the record is updated with new values.';
 -- ddl-end --
+
+
+
+-- object: pms.partner | type: TABLE --
+ALTER TABLE pms.partner ADD COLUMN requires_payment boolean;
+
+-- object: pms.partner_h | type: TABLE --
+ALTER TABLE pms.partner_h ADD COLUMN requires_payment boolean;
