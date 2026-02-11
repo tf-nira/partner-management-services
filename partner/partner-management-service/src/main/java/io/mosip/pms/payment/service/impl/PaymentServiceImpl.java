@@ -2,17 +2,18 @@ package io.mosip.pms.payment.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.pms.common.constant.EventType;
+import io.mosip.pms.common.dto.PageResponseDto;
+import io.mosip.pms.common.dto.SearchDto;
 import io.mosip.pms.common.dto.Type;
 import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
+import io.mosip.pms.common.helper.SearchHelper;
 import io.mosip.pms.common.helper.WebSubPublisher;
 import io.mosip.pms.common.repository.PartnerBalanceRepository;
 import io.mosip.pms.common.repository.PartnerPaymentTransactionsRepository;
 import io.mosip.pms.common.repository.PartnerPrnRepository;
 import io.mosip.pms.common.repository.PartnerServiceRepository;
-import io.mosip.pms.common.util.PMSLogger;
-import io.mosip.pms.common.util.RestUtil;
-import io.mosip.pms.common.util.UserDetailUtil;
+import io.mosip.pms.common.util.*;
 import io.mosip.pms.device.util.AuditUtil;
 import io.mosip.pms.partner.constant.ErrorCode;
 import io.mosip.pms.partner.constant.PartnerConstants;
@@ -26,17 +27,15 @@ import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
 import io.mosip.pms.payment.service.PaymentService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -51,6 +50,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final PartnerBalanceRepository balanceRepository;
     private final AuditUtil auditUtil;
     private final WebSubPublisher webSubPublisher;
+    private final SearchHelper searchHelper;
+    private final PageUtils pageUtils;
 
     @Value("${pmp.prn.generate.rest.uri}")
     private String generatePrnUrl;
@@ -62,6 +63,7 @@ public class PaymentServiceImpl implements PaymentService {
     private BigDecimal minimumBalanceRequired;
 
 
+    @Override
     public PrnResponse generatePrn(PrnRequest request) {
         Partner partnerData = getValidPartner(request.getPartnerId(), false);
         if(request.getAmount().compareTo(minimumBalanceRequired) < 0){
@@ -124,6 +126,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
+    @Override
     public ValidatePrnResponse validatePrn(ValidatePrnRequest request) {
         Partner partnerData = getValidPartner(request.getPartnerId(), false);
         ValidatePrnResponse validatePrnResponse = null;
@@ -187,22 +190,28 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void addBalance(ValidatePrnRequest request, ValidatePrnResponse response) {
-    BigDecimal creditedAmount = Optional.ofNullable(response.getResponse().getAmountPaid())
-            .orElse(BigDecimal.ZERO);
-    PartnerBalance balanceDetails = balanceRepository.findById(request.getPartnerId())
-            .map(existingBalance -> {
-                BigDecimal current = Optional.ofNullable(existingBalance.getBalance()).orElse(BigDecimal.ZERO);
-                existingBalance.setBalance(current.add(creditedAmount));
-                existingBalance.setUpdBy(getLoggedInUserId());
-                existingBalance.setUpdDtimes(LocalDateTime.now());
-                return existingBalance;
-            })
-            .orElseGet(() -> {
-                return mapBalanceDetails(request, response);
-            });
-    balanceRepository.save(balanceDetails);
-    notify(balanceDetails,response.getResponse().getAmountPaid());
-}
+        BigDecimal creditedAmount = Optional.ofNullable(response.getResponse().getAmountPaid())
+                .orElse(BigDecimal.ZERO);
+        PartnerBalance balanceDetails = balanceRepository.findById(request.getPartnerId())
+                .map(existingBalance -> {
+                    BigDecimal current = Optional.ofNullable(existingBalance.getBalance()).orElse(BigDecimal.ZERO);
+                    existingBalance.setBalance(current.add(creditedAmount));
+                    existingBalance.setUpdBy(getLoggedInUserId());
+                    existingBalance.setUpdDtimes(LocalDateTime.now());
+                    return existingBalance;
+                })
+                .orElseGet(() -> {
+                    return mapBalanceDetails(request, response);
+                });
+        try {
+            balanceRepository.save(balanceDetails);
+        } catch (Exception dbEx) {
+            LOGGER.error("Balance failed to save to local DB: {}", dbEx.getMessage());
+            auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.BALANCE_DB_SAVE_FAILURE, request.getPartnerId(), "partner");
+            throw new ApiAccessibleException("DB_ERROR", "Balance failed to persist");
+        }
+        notify(balanceDetails, response.getResponse().getAmountPaid());
+    }
 
     private BigDecimal getBalance(String partnerId) {
         return balanceRepository.findById(partnerId)
@@ -294,6 +303,19 @@ public class PaymentServiceImpl implements PaymentService {
         data.put(PartnerConstants.CREDITED_AMOUNT, addedAmount);
         data.put(PartnerConstants.UPDATED_BALANCE_DATA,balanceDetails);
         webSubPublisher.notify(EventType.PARTNERS_AMOUNT, data, type);
+    }
+
+    @Override
+    public PageResponseDto<PartnerPaymentTransactions> searchPayment(SearchDto dto) {
+        List<PartnerPaymentTransactions> partnerTypes = new ArrayList<>();
+        PageResponseDto<PartnerPaymentTransactions> pageDto = new PageResponseDto<>();
+        Page<PartnerPaymentTransactions> page = searchHelper.search(PartnerPaymentTransactions.class, dto, null);
+        if (page.getContent() != null && !page.getContent().isEmpty()) {
+            partnerTypes = MapperUtils.mapAll(page.getContent(), PartnerPaymentTransactions.class);
+            pageDto = pageUtils.sortPage(partnerTypes, dto.getSort(), dto.getPagination(), page.getTotalElements());
+        }
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_TYPE_SUCCESS);
+        return pageDto;
     }
 
 }

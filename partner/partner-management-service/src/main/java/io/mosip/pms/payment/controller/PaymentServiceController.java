@@ -1,10 +1,12 @@
 package io.mosip.pms.payment.controller;
 
 import io.mosip.kernel.core.http.ResponseFilter;
+import io.mosip.pms.common.dto.PageResponseDto;
+import io.mosip.pms.common.dto.SearchDto;
+import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.request.dto.RequestWrapper;
 import io.mosip.pms.common.response.dto.ResponseWrapper;
 import io.mosip.pms.device.util.AuditUtil;
-import io.mosip.pms.partner.constant.PartnerServiceAuditEnum;
 import io.mosip.pms.payment.service.PaymentService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -63,6 +65,19 @@ public class PaymentServiceController {
         ResponseWrapper<ValidatePrnResponse> responseWrapper = new ResponseWrapper<>();
         auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.VALIDATE_PARTNER_PRN);
         responseWrapper.setResponse(paymentService.validatePrn(request.getRequest()));
+        return responseWrapper;
+    }
+
+
+    @ResponseFilter
+    @PostMapping("/payment/search")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpaymentsearch())")
+    @Operation(summary = "Service to search payment details", description = "Service to search payment details")
+    public ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> searchPartner(
+            @RequestBody @Valid RequestWrapper<SearchDto> request) {
+        ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> responseWrapper = new ResponseWrapper<>();
+        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.SEARCH_PARTNER);
+        responseWrapper.setResponse(paymentService.searchPayment(request.getRequest()));
         return responseWrapper;
     }
 }
