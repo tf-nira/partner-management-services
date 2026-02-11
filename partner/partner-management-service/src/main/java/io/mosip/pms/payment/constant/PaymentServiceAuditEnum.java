@@ -69,6 +69,12 @@ public enum PaymentServiceAuditEnum {
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
 	RETRIVE_PARTNER_REQUIRED_PAYMENT_FAILURE("PMS_PRT_422", AuditConstant.AUDIT_SYSTEM, "GET REQUIRED PAYMENT PARTNER ",
 			"Retrieving required payment partner failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	BALANCE_DB_SAVE_FAILURE("PMS_PMP_423", AuditConstant.AUDIT_SYSTEM, "SAVE BALANCE",
+			"Failed to save balance", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	SEARCH_PARTNER("PMS_PRT_413", AuditConstant.AUDIT_SYSTEM, "POST SEARCH PAYMENT",
+			"Search Payment", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);
 	
 	
