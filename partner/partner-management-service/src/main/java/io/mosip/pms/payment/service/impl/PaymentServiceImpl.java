@@ -314,7 +314,7 @@ public class PaymentServiceImpl implements PaymentService {
             partnerTypes = MapperUtils.mapAll(page.getContent(), PartnerPaymentTransactions.class);
             pageDto = pageUtils.sortPage(partnerTypes, dto.getSort(), dto.getPagination(), page.getTotalElements());
         }
-        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_TYPE_SUCCESS);
+        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.SEARCH_PAYMENT_SUCCESS);
         return pageDto;
     }
 

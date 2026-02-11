@@ -76,7 +76,7 @@ public class PaymentServiceController {
     public ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> searchPartner(
             @RequestBody @Valid RequestWrapper<SearchDto> request) {
         ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> responseWrapper = new ResponseWrapper<>();
-        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.SEARCH_PARTNER);
+        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.SEARCH_PAYMENT);
         responseWrapper.setResponse(paymentService.searchPayment(request.getRequest()));
         return responseWrapper;
     }
