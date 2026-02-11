@@ -7,6 +7,7 @@ import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.request.dto.RequestWrapper;
 import io.mosip.pms.common.response.dto.ResponseWrapper;
 import io.mosip.pms.device.util.AuditUtil;
+import io.mosip.pms.partner.constant.PartnerServiceAuditEnum;
 import io.mosip.pms.payment.service.PaymentService;
 import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
@@ -18,7 +19,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import io.mosip.pms.payment.constant.PaymentServiceAuditEnum;
 import io.mosip.pms.payment.request.dto.PrnRequest;
 import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
@@ -48,7 +48,7 @@ public class PaymentServiceController {
     public ResponseWrapper<PrnResponse> generatePrn(
             @RequestBody @Valid RequestWrapper<PrnRequest> request) {
 
-        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.GENERATE_PARTNER_PRN);
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PARTNER_PRN);
         ResponseWrapper<PrnResponse> responseWrapper = new ResponseWrapper<>();
         responseWrapper.setResponse(paymentService.generatePrn(request.getRequest()));
         return responseWrapper;
@@ -63,7 +63,7 @@ public class PaymentServiceController {
     public ResponseWrapper<ValidatePrnResponse> validatePartnerPrn(
             @RequestBody @Valid RequestWrapper<ValidatePrnRequest> request) {
         ResponseWrapper<ValidatePrnResponse> responseWrapper = new ResponseWrapper<>();
-        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.VALIDATE_PARTNER_PRN);
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PARTNER_PRN);
         responseWrapper.setResponse(paymentService.validatePrn(request.getRequest()));
         return responseWrapper;
     }
@@ -76,7 +76,7 @@ public class PaymentServiceController {
     public ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> searchPartner(
             @RequestBody @Valid RequestWrapper<SearchDto> request) {
         ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> responseWrapper = new ResponseWrapper<>();
-        auditUtil.setAuditRequestDto(PaymentServiceAuditEnum.SEARCH_PAYMENT);
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PAYMENT);
         responseWrapper.setResponse(paymentService.searchPayment(request.getRequest()));
         return responseWrapper;
     }

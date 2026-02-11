@@ -10,7 +10,7 @@ CREATE TABLE partner_prn (
     cr_dtimes    timestamp NOT NULL,
     upd_by       character varying(256),
     upd_dtimes   timestamp,
-	CONSTRAINT pk_part PRIMARY KEY (partner_id)
+	CONSTRAINT pk_part PRIMARY KEY (partner_id, prn)
 );
 
 
