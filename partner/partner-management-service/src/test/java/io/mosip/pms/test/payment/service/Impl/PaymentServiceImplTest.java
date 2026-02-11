@@ -3,6 +3,7 @@ package io.mosip.pms.test.payment.service.Impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
+import io.mosip.pms.common.helper.WebSubPublisher;
 import io.mosip.pms.common.repository.*;
 import io.mosip.pms.common.util.RestUtil;
 import io.mosip.pms.device.util.AuditUtil;
@@ -33,6 +34,9 @@ public class PaymentServiceImplTest {
     private PaymentServiceImpl paymentService;
 
     @Mock
+    private WebSubPublisher webSubPublisher;
+
+    @Mock
     private RestUtil restUtil;
 
     @Mock
@@ -54,12 +58,14 @@ public class PaymentServiceImplTest {
     private AuditUtil auditUtil;
 
     private Partner mockActivePartner() {
-        Partner p = new Partner();
-        p.setId("mosip");
-        p.setIsActive(true);
-        p.setName("MOSIP Partner");
-        return p;
+        Partner partner = new Partner();
+        partner.setId("mosip");
+        partner.setIsActive(true);
+        partner.setRequiresPayment(true);
+        partner.setName("MOSIP Partner");
+        return partner;
     }
+
 
     @Test
     public void testGeneratePrnSuccess() {
@@ -67,10 +73,14 @@ public class PaymentServiceImplTest {
         ReflectionTestUtils.setField(paymentService,
                 "generatePrnUrl",
                 "https://api-internal.niradev1.idencode.link/v1/payment/generatePrn");
+        ReflectionTestUtils.setField(paymentService,
+                "minimumBalanceRequired",
+                new BigDecimal("50"));
 
         PrnRequest request = new PrnRequest();
         request.setPartnerId("mosip");
         request.setServiceCode("IDA");
+        request.setAmount(new BigDecimal("100"));
 
         Mockito.when(partnerRepository.findById("mosip"))
                 .thenReturn(Optional.of(mockActivePartner()));
@@ -110,18 +120,22 @@ public class PaymentServiceImplTest {
 
         PrnRequest request = new PrnRequest();
         request.setPartnerId("mosip");
+        request.setAmount(BigDecimal.valueOf(300));
 
+        ReflectionTestUtils.setField(paymentService,
+                "minimumBalanceRequired",
+                BigDecimal.valueOf(100));
         Mockito.when(partnerRepository.findById("mosip"))
                 .thenReturn(Optional.of(mockActivePartner()));
         Mockito.when(restUtil.postApi(Mockito.any(), Mockito.any(), Mockito.any(),
-                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(Map.class)))
+                Mockito.any(), Mockito.any(), Mockito.any(),Mockito.eq(Map.class)))
                 .thenReturn(null);
         paymentService.generatePrn(request);
     }
 
+
     @Test(expected = PartnerServiceException.class)
     public void testGeneratePrnPartnerNotFound() {
-
         Mockito.when(partnerRepository.findById("mosip"))
                 .thenReturn(Optional.empty());
         PrnRequest request = new PrnRequest();
@@ -138,7 +152,7 @@ public class PaymentServiceImplTest {
         request.setPrn("PRN123");
 
         Mockito.when(partnerRepository.findById("mosip"))
-                .thenReturn(Optional.of(mockActivePartner()));
+        	.thenReturn(Optional.of(mockActivePartner()));
 
         ValidatePrnInnerResponse inner = new ValidatePrnInnerResponse();
         inner.setStatusCode(PaymentConstants.NOTPAID_STATUSCODE);
@@ -179,6 +193,8 @@ public class PaymentServiceImplTest {
         Mockito.when(restUtil.postApi(Mockito.any(),Mockito.any(),Mockito.any(),
                 Mockito.any(),Mockito.any(),Mockito.any(),Mockito.eq(Map.class)))
                 .thenReturn(new HashMap<>());
+        Mockito.doNothing().when(webSubPublisher)
+                .notify(Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.when(mapper.convertValue(Mockito.any(), Mockito.eq(ValidatePrnResponse.class)))
                 .thenReturn(response);
         Mockito.when(partnerPrnRepository.findById(Mockito.any()))
@@ -211,5 +227,77 @@ public class PaymentServiceImplTest {
 
         paymentService.validatePrn(request);
     }
+
+    @Test(expected = PartnerServiceException.class)
+    public void testGeneratePrnMinimumBalanceFailure() {
+
+        ReflectionTestUtils.setField(paymentService,
+                "minimumBalanceRequired",
+                new BigDecimal("100"));
+
+        PrnRequest request = new PrnRequest();
+        request.setPartnerId("mosip");
+        request.setAmount(new BigDecimal("20"));
+
+        Mockito.when(partnerRepository.findById("mosip"))
+                .thenReturn(Optional.of(mockActivePartner()));
+
+        PartnerBalance balance = new PartnerBalance();
+        balance.setBalance(new BigDecimal("10"));
+
+        Mockito.when(balanceRepository.findById("mosip"))
+                .thenReturn(Optional.of(balance));
+
+        paymentService.generatePrn(request);
+    }
+
+    @Test(expected = ApiAccessibleException.class)
+    public void testValidatePrnPrnNotFound() {
+
+        ValidatePrnRequest request = new ValidatePrnRequest();
+        request.setPartnerId("mosip");
+        request.setPrn("PRN123");
+
+        Mockito.when(partnerRepository.findById("mosip"))
+                .thenReturn(Optional.of(mockActivePartner()));
+
+        ValidatePrnInnerResponse inner = new ValidatePrnInnerResponse();
+        inner.setStatusCode(PaymentConstants.NOTPAID_STATUSCODE);
+
+        ValidatePrnResponse response = new ValidatePrnResponse();
+        response.setResponse(inner);
+
+        Mockito.when(restUtil.postApi(Mockito.any(), Mockito.any(), Mockito.any(),
+                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(Map.class)))
+                .thenReturn(new HashMap<>());
+        Mockito.when(mapper.convertValue(Mockito.any(), Mockito.eq(ValidatePrnResponse.class)))
+                .thenReturn(response);
+        Mockito.when(partnerPrnRepository.findById(Mockito.any()))
+                .thenReturn(Optional.empty());
+
+        paymentService.validatePrn(request);
+    }
+
+    @Test(expected = ApiAccessibleException.class)
+    public void testValidatePrnInvalidResponse() {
+
+        ValidatePrnRequest request = new ValidatePrnRequest();
+        request.setPartnerId("mosip");
+        request.setPrn("PRN123");
+
+        Mockito.when(partnerRepository.findById("mosip"))
+                .thenReturn(Optional.of(mockActivePartner()));
+        Mockito.when(restUtil.postApi(Mockito.any(), Mockito.any(), Mockito.any(),
+                        Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(Map.class)))
+                .thenReturn(new HashMap<>());
+
+        ValidatePrnResponse response = new ValidatePrnResponse();
+        response.setResponse(null);
+
+        Mockito.when(mapper.convertValue(Mockito.any(), Mockito.eq(ValidatePrnResponse.class)))
+                .thenReturn(response);
+        paymentService.validatePrn(request);
+    }
+
 
 }

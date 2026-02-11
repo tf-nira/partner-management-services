@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.Query;
 
 public  interface PartnerPrnRepository extends JpaRepository<PartnerPrn, PartnerPrnId> {
 
-    @Query(value = "select * from partner_prn ppr where ppr.prn=?", nativeQuery = true)
+    @Query(value = "SELECT * FROM partner_prn ppr WHERE ppr.prn = ?1 AND ppr.partner_id = ?2", nativeQuery = true)
     public PartnerPrn findByPrn(String prn);
 
 }
