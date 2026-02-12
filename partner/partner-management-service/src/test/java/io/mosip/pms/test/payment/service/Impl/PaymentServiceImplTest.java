@@ -225,8 +225,6 @@ public class PaymentServiceImplTest {
                 .thenReturn(Optional.of(mockActivePartner()));
         Mockito.when(restUtil.postApi(Mockito.any(), Mockito.any(), Mockito.any(),
                         Mockito.any(), Mockito.any(), Mockito.any(), Mockito.eq(Map.class)))
-                .thenReturn(new HashMap<>());
-        Mockito.when(mapper.convertValue(Mockito.any(), Mockito.eq(ValidatePrnResponse.class)))
                 .thenReturn(null);
 
         paymentService.validatePrn(request);
