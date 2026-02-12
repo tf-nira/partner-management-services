@@ -339,6 +339,7 @@ public class PartnerServiceImpl implements PartnerService {
 		partnerHistory.setId(partnerHPK);
 		partnerHistory.setLogoUrl(partner.getLogoUrl());
 		partnerHistory.setAdditionalInfo(partner.getAdditionalInfo());
+		partnerHistory.setRequiresPayment(partner.getRequiresPayment());
 		partnerHRepository.save(partnerHistory);
 	}
 
@@ -360,6 +361,7 @@ public class PartnerServiceImpl implements PartnerService {
 		partner.setApprovalStatus(PartnerConstants.IN_PROGRESS);
 		partner.setLogoUrl(request.getLogoUrl());
 		partner.setAdditionalInfo(request.getAdditionalInfo()== null ? "[]" : request.getAdditionalInfo().toString());
+		partner.setRequiresPayment(request.getRequiresPayment());
 		partner.setCrDtimes(Timestamp.valueOf(LocalDateTime.now()));
 		return partner;
 	}
