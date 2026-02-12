@@ -1584,6 +1584,7 @@ public class PartnerServiceImpl implements PartnerService {
 		input.setPartnerId(request.getPartnerId());
 		input.setPartnerType(request.getPartnerType());
 		input.setPolicyGroup(request.getPolicyGroup());
+		input.setRequiresPayment(request.getRequiresPayment());
 		return registerPartner(input);
 	}
 	
