@@ -4,7 +4,11 @@ import io.mosip.pms.common.request.dto.ErrorResponse;
 import lombok.Data;
 
 import java.util.List;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 @Data
 public class PrnResponse {
 

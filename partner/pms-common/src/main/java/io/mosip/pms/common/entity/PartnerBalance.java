@@ -8,7 +8,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 @Entity
 @Table(name = "partner_current_balance")
 public class PartnerBalance implements Serializable {

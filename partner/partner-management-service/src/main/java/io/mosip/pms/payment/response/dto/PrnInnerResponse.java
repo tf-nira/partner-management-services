@@ -1,7 +1,11 @@
 package io.mosip.pms.payment.response.dto;
 
 import lombok.Data;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 @Data
 public class PrnInnerResponse {
 

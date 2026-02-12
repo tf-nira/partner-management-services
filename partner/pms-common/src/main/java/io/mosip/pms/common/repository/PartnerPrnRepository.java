@@ -3,7 +3,11 @@ import io.mosip.pms.common.entity.PartnerPrn;
 import io.mosip.pms.common.entity.PartnerPrnId;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 
 public  interface PartnerPrnRepository extends JpaRepository<PartnerPrn, PartnerPrnId> {
 

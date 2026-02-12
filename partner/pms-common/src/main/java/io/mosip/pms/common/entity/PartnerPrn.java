@@ -5,7 +5,11 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.persistence.*;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 @Entity
 @Table(name = "partner_prn")
 @IdClass(PartnerPrnId.class)

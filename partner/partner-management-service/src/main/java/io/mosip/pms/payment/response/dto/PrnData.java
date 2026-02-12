@@ -3,7 +3,11 @@ package io.mosip.pms.payment.response.dto;
 import lombok.Data;
 
 import java.math.BigDecimal;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 @Data
 public class PrnData {
 

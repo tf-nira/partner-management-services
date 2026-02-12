@@ -2,7 +2,11 @@ package io.mosip.pms.common.entity;
 
 import java.io.Serializable;
 import java.util.Objects;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 public class PartnerPrnId implements Serializable {
 
     private String partnerId;

@@ -1,9 +1,12 @@
 package io.mosip.pms.payment.request.dto;
-
 import java.math.BigDecimal;
 import javax.validation.constraints.NotBlank;
 import lombok.Data;
-
+/**
+ *
+ * @author Jagadeesh
+ *
+ */
 @Data
 public class ValidatePrnRequest {
 

@@ -1,5 +1,9 @@
 package io.mosip.pms.payment.constant;
-
+/**
+ *
+ * @author Karthik S, Jagadeesh
+ *
+ */
 public final class PaymentConstants {
 
     public static final String SERVICE_NEWAID = "NEWAID";
