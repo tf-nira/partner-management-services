@@ -4,7 +4,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 import java.math.BigDecimal;
-
+/**
+ *
+ * @author Jagadeesh
+ *
+ */
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ValidatePrnInnerResponse {

@@ -7,7 +7,11 @@ import io.mosip.pms.payment.request.dto.PrnRequest;
 import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
-
+/**
+ *
+ * @author Karthik S
+ *
+ */
 public interface PaymentService {
 
     public PrnResponse generatePrn(PrnRequest request);

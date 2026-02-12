@@ -23,9 +23,12 @@ import io.mosip.pms.payment.request.dto.PrnRequest;
 import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
-
 import javax.validation.Valid;
-
+/**
+ *
+ * @author Karthik S, Jagadeesh
+ *
+ */
 @RestController
 @RequestMapping(value = "/partners")
 @Api(tags = { "Partner Payment Controller" })
