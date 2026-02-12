@@ -209,7 +209,7 @@ public class PaymentServiceImpl implements PaymentService {
             auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.BALANCE_DB_SAVE_FAILURE, request.getPartnerId(), "partner");
             throw new ApiAccessibleException("DB_ERROR", "Balance failed to persist");
         }
-        notify(balanceDetails, response.getResponse().getAmountPaid());
+        notify(balanceDetails, response.getResponse().getAmountPaid(),response.getResponse().getPrn());
     }
 
     public BigDecimal getBalance(String partnerId) {
@@ -294,13 +294,14 @@ public class PaymentServiceImpl implements PaymentService {
         return partnerById.get();
     }
 
-    private void notify(PartnerBalance balanceDetails, BigDecimal addedAmount) {
+    private void notify(PartnerBalance balanceDetails, BigDecimal addedAmount, String prn) {
         Type type = new Type();
         type.setName("PaymentServiceImpl");
         type.setNamespace("io.mosip.pms.payment.service.impl.PaymentServiceImpl");
         Map<String, Object> data = new HashMap<>();
         data.put(PartnerConstants.CREDITED_AMOUNT, addedAmount);
         data.put(PartnerConstants.UPDATED_BALANCE_DATA,balanceDetails);
+        data.put(PartnerConstants.PRN_DATA,prn);
         webSubPublisher.notify(EventType.PARTNERS_AMOUNT, data, type);
     }
 

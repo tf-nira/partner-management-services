@@ -27,6 +27,8 @@ public final class PartnerConstants {
 	public static final String CREDITED_AMOUNT = "creditedAmount";
 
 	public static final String UPDATED_BALANCE_DATA = "updatedBalanceData";
+
+	public static final String PRN_DATA = "prnData";
 	
 	public static final String MISP_DATA = "mispLicenseData";
 	
