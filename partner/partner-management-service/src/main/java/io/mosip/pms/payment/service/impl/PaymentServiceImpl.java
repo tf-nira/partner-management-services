@@ -13,6 +13,7 @@ import io.mosip.pms.common.repository.PartnerBalanceRepository;
 import io.mosip.pms.common.repository.PartnerPaymentTransactionsRepository;
 import io.mosip.pms.common.repository.PartnerPrnRepository;
 import io.mosip.pms.common.repository.PartnerServiceRepository;
+import io.mosip.pms.common.request.dto.ErrorResponse;
 import io.mosip.pms.common.util.*;
 import io.mosip.pms.device.util.AuditUtil;
 import io.mosip.pms.partner.constant.ErrorCode;
@@ -153,8 +154,18 @@ public class PaymentServiceImpl implements PaymentService {
 
         }
         if (validatePrnResponse == null || validatePrnResponse.getResponse() == null) {
-        	auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PRN_INVALID_RESPONSE, request.getPrn(), "prn");
-            throw new ApiAccessibleException("INVALID_RESPONSE", "Invalid structure in validation response");
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PRN_INVALID_RESPONSE, request.getPrn(), "prn");
+            if (validatePrnResponse.getErrors() != null &&
+                    !validatePrnResponse.getErrors().isEmpty()) {
+                ErrorResponse error = validatePrnResponse.getErrors().get(0);
+                throw new ApiAccessibleException(
+                        error.getErrorCode(),
+                        error.getMessage()
+                );
+            }
+            else {
+                throw new ApiAccessibleException("INVALID_RESPONSE", "Invalid structure in validation response");
+            }
         }
         
         String statusCode = validatePrnResponse.getResponse().getStatusCode();

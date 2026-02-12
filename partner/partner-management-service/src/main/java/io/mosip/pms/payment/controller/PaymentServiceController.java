@@ -48,13 +48,11 @@ public class PaymentServiceController {
     )
     @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerpayment())")
     @Operation(summary = "Service to generate PRN", description = "Generates a PRN for a given request")
-    public ResponseWrapper<PrnResponse> generatePrn(
+    public PrnResponse generatePrn(
             @RequestBody @Valid RequestWrapper<PrnRequest> request) {
 
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PARTNER_PRN);
-        ResponseWrapper<PrnResponse> responseWrapper = new ResponseWrapper<>();
-        responseWrapper.setResponse(paymentService.generatePrn(request.getRequest()));
-        return responseWrapper;
+        return paymentService.generatePrn(request.getRequest());
     }
 
 
@@ -63,12 +61,10 @@ public class PaymentServiceController {
     @PostMapping("/validatePrn")
     @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerpayment())")
     @Operation(summary = "Service to validate prn", description = "Service to validate prn")
-    public ResponseWrapper<ValidatePrnResponse> validatePartnerPrn(
+    public ValidatePrnResponse validatePartnerPrn(
             @RequestBody @Valid RequestWrapper<ValidatePrnRequest> request) {
-        ResponseWrapper<ValidatePrnResponse> responseWrapper = new ResponseWrapper<>();
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PARTNER_PRN);
-        responseWrapper.setResponse(paymentService.validatePrn(request.getRequest()));
-        return responseWrapper;
+        return paymentService.validatePrn(request.getRequest());
     }
 
 
