@@ -12,7 +12,7 @@ CREATE TABLE partner_prn (
     cr_dtimes    timestamp NOT NULL,
     upd_by       character varying(256),
     upd_dtimes   timestamp,
-	CONSTRAINT pk_part PRIMARY KEY (partner_id)
+	CONSTRAINT pk_part PRIMARY KEY (partner_id, prn)
 );
 
 
@@ -84,7 +84,7 @@ CREATE TABLE partner_payment_transactions (
     cr_dtimes      timestamp NOT NULL,
     upd_by         character varying(256),
     upd_dtimes     timestamp,
-	CONSTRAINT pk_part PRIMARY KEY (partner_id)
+	CONSTRAINT pk_part PRIMARY KEY (transaction_id)
 );
 
 COMMENT ON TABLE partner_payment_transactions IS 'Partner Payment Transactions: Stores all credit and debit transactions for partner accounts including source, amount, and audit details.';

@@ -2,6 +2,10 @@ package io.mosip.pms.test.payment.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.mosip.pms.common.dto.PageResponseDto;
+import io.mosip.pms.common.dto.Pagination;
+import io.mosip.pms.common.dto.SearchDto;
+import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import org.junit.Test;
 import io.mosip.pms.payment.controller.PaymentServiceController;
 import io.mosip.pms.payment.request.dto.PrnRequest;
@@ -28,11 +32,14 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(PaymentServiceController.class)
@@ -72,7 +79,7 @@ public class PaymentServiceControllerTest {
         PrnResponse prnResponse = new PrnResponse();
         prnResponse.setId("mosip.pms.generate.prn");
         prnResponse.setVersion("1.0");
-        
+
         Mockito.when(paymentService.generatePrn(prnRequest))
         		.thenReturn(prnResponse);
 
@@ -154,5 +161,69 @@ public class PaymentServiceControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.errors").exists());
     }
+
+    @Test
+    @WithMockUser(roles = {"PARTNER"})
+    public void testSearchPaymentSuccess() throws Exception {
+
+        SearchDto searchDto = new SearchDto();
+        searchDto.setFilters(Collections.emptyList());
+        searchDto.setSort(Collections.emptyList());
+
+        Pagination pagination = new Pagination();
+        pagination.setPageStart(1);
+        pagination.setPageFetch(8);
+        searchDto.setPagination(pagination);
+
+        RequestWrapper<SearchDto> request = new RequestWrapper<>();
+        request.setRequest(searchDto);
+        
+        PartnerPaymentTransactions transaction = new PartnerPaymentTransactions();
+        transaction.setTransactionId("fffff");
+        transaction.setPartnerId("xdfd");
+        transaction.setEntryType("ddfd");
+        transaction.setAmount(new BigDecimal("235"));
+        transaction.setSourceSystem("sdsd");
+        transaction.setDescription("fvhfg");
+
+        List<PartnerPaymentTransactions> list =
+                Collections.singletonList(transaction);
+
+        PageResponseDto<PartnerPaymentTransactions> pageResponse = new PageResponseDto<>();
+        pageResponse.setFromRecord(1);
+        pageResponse.setToRecord(8);
+        pageResponse.setTotalRecord(8);
+        pageResponse.setData(list);
+
+        Mockito.when(paymentService.searchPayment(Mockito.any(SearchDto.class)))
+                .thenReturn(pageResponse);
+        mockMvc.perform(post("/partners/payment/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = {"PARTNER"})
+    public void testSearchPaymentFailure() throws Exception {
+
+        SearchDto searchDto = new SearchDto();
+        searchDto.setFilters(Collections.emptyList());
+        searchDto.setPagination(new Pagination());
+
+        RequestWrapper<SearchDto> request = new RequestWrapper<>();
+        request.setRequest(searchDto);
+
+        Mockito.when(paymentService.searchPayment(Mockito.any(SearchDto.class)))
+                .thenThrow(new RuntimeException("Search failed"));
+
+        mockMvc.perform(post("/partners/payment/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").exists());
+    }
+
+
 
 }
