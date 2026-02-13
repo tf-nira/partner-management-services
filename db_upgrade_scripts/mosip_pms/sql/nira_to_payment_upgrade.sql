@@ -115,7 +115,7 @@ COMMENT ON COLUMN pms.partner.upd_dtimes IS 'Updated DateTimestamp : Date and Ti
 
 
 -- object: pms.partner | type: TABLE --
-ALTER TABLE pms.partner ADD COLUMN requires_payment boolean NOT NULL;
+ALTER TABLE pms.partner ADD COLUMN requires_payment boolean NOT NULL DEFAULT false;
 
 -- object: pms.partner_h | type: TABLE --
-ALTER TABLE pms.partner_h ADD COLUMN requires_payment boolean NOT NULL;
+ALTALTER TABLE pms.partner_h ADD COLUMN requires_payment boolean NOT NULL DEFAULT false;
