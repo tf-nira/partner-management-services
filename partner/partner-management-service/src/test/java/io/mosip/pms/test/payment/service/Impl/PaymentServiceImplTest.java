@@ -24,7 +24,6 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
-import java.math.BigDecimal;
 import java.util.*;
 /**
  *
@@ -79,19 +78,19 @@ public class PaymentServiceImplTest {
                 "https://api-internal.niradev1.idencode.link/v1/payment/generatePrn");
         ReflectionTestUtils.setField(paymentService,
                 "minimumBalanceRequired",
-                new BigDecimal("50"));
+                Double.valueOf(50));
 
         PrnRequest request = new PrnRequest();
         request.setPartnerId("mosip");
         request.setServiceCode("IDA");
-        request.setAmount(new BigDecimal("100"));
+        request.setAmount(Double.valueOf(100));
 
         Mockito.when(partnerRepository.findById("mosip"))
                 .thenReturn(Optional.of(mockActivePartner()));
 
         Map<String, Object> dataMap = new HashMap<>();
         dataMap.put("prn", "PRN123");
-        dataMap.put("amount", new BigDecimal("100"));
+        dataMap.put("amount", Double.valueOf(100));
 
         Map<String, Object> innerMap = new HashMap<>();
         innerMap.put("data", dataMap);
@@ -105,7 +104,7 @@ public class PaymentServiceImplTest {
 
         PrnData data = new PrnData();
         data.setPrn("PRN123");
-        data.setAmount(new BigDecimal("100"));
+        data.setAmount(Double.valueOf(100));
 
         PrnInnerResponse inner = new PrnInnerResponse();
         inner.setData(data);
@@ -124,11 +123,11 @@ public class PaymentServiceImplTest {
 
         PrnRequest request = new PrnRequest();
         request.setPartnerId("mosip");
-        request.setAmount(BigDecimal.valueOf(300));
+        request.setAmount(Double.valueOf(300));
 
         ReflectionTestUtils.setField(paymentService,
                 "minimumBalanceRequired",
-                BigDecimal.valueOf(100));
+                Double.valueOf(100));
         Mockito.when(partnerRepository.findById("mosip"))
                 .thenReturn(Optional.of(mockActivePartner()));
         Mockito.when(restUtil.postApi(Mockito.any(), Mockito.any(), Mockito.any(),
@@ -188,7 +187,7 @@ public class PaymentServiceImplTest {
 
         ValidatePrnInnerResponse inner = new ValidatePrnInnerResponse();
         inner.setStatusCode(PaymentConstants.PAID_STATUSCODE);
-        inner.setAmountPaid(new BigDecimal("100"));
+        inner.setAmountPaid(Double.valueOf(100));
         inner.setPrn("PRN123");
 
         ValidatePrnResponse response = new ValidatePrnResponse();
@@ -233,19 +232,19 @@ public class PaymentServiceImplTest {
     @Test(expected = PartnerServiceException.class)
     public void testGeneratePrnMinimumBalanceFailure() {
 
-        ReflectionTestUtils.setField(paymentService,
+    	ReflectionTestUtils.setField(paymentService,
                 "minimumBalanceRequired",
-                new BigDecimal("100"));
+                Double.valueOf(100));
 
         PrnRequest request = new PrnRequest();
         request.setPartnerId("mosip");
-        request.setAmount(new BigDecimal("20"));
+        request.setAmount(Double.valueOf(20));
 
         Mockito.when(partnerRepository.findById("mosip"))
                 .thenReturn(Optional.of(mockActivePartner()));
 
         PartnerBalance balance = new PartnerBalance();
-        balance.setBalance(new BigDecimal("10"));
+        balance.setBalance(Double.valueOf(10));
 
         Mockito.when(balanceRepository.findById("mosip"))
                 .thenReturn(Optional.of(balance));
