@@ -101,7 +101,7 @@ public class PaymentServiceControllerTest {
         validateRequest.setPrn("2240015260462");
         validateRequest.setPartnerId("mosip");
         validateRequest.setServiceCode("IDA");
-        validateRequest.setAmount(new BigDecimal("100"));
+        validateRequest.setAmount(Double.valueOf(100));
 
         RequestWrapper<ValidatePrnRequest> wrapper = new RequestWrapper<>();
         wrapper.setRequest(validateRequest);
@@ -151,7 +151,7 @@ public class PaymentServiceControllerTest {
         validateRequest.setPrn("2240015260462");
         validateRequest.setPartnerId("mosip");
         validateRequest.setServiceCode("IDA");
-        validateRequest.setAmount(new BigDecimal("100"));
+        validateRequest.setAmount(Double.valueOf(100));
 
         RequestWrapper<ValidatePrnRequest> wrapper = new RequestWrapper<>();
         wrapper.setRequest(validateRequest);
@@ -186,7 +186,7 @@ public class PaymentServiceControllerTest {
         transaction.setTransactionId("fffff");
         transaction.setPartnerId("xdfd");
         transaction.setEntryType("ddfd");
-        transaction.setAmount(new BigDecimal("235"));
+        transaction.setAmount(Double.valueOf(235));
         transaction.setSourceSystem("sdsd");
         transaction.setDescription("fvhfg");
 
