@@ -29,8 +29,8 @@ public class PartnerPrn implements Serializable {
     private String status;
 
 
-    @Column(name = "amount", nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    @Column(name = "amount", nullable = false)
+    private double amount;
 
     @Column(name = "service_code", nullable = false)
     private String serviceCode;
@@ -77,11 +77,11 @@ public class PartnerPrn implements Serializable {
         this.status = status;
     }
 
-    public BigDecimal getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 

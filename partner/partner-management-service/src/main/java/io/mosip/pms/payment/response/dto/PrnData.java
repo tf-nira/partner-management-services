@@ -16,6 +16,6 @@ public class PrnData {
     private String expiryDate;
     private String prn;
     private String searchCode;
-    private BigDecimal amount;
+    private double amount;
     private String currency;
 }

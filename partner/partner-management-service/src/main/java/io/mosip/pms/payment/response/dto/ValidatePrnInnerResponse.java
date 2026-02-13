@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ValidatePrnInnerResponse {
 
-    private BigDecimal amountPaid;
+    private double amountPaid;
     private String errorCode;
     private String errorDesc;
     private String instrumentID;

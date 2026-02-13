@@ -18,7 +18,7 @@ public class ValidatePrnRequest {
 
     private String serviceCode;
 
-    private BigDecimal amount;
+    private double amount;
     
     public String getPrn() {
         return prn;
@@ -44,11 +44,11 @@ public class ValidatePrnRequest {
         this.serviceCode = serviceCode;
     }
 
-    public BigDecimal getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 }
