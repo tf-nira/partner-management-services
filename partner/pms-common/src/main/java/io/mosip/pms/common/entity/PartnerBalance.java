@@ -1,7 +1,6 @@
 package io.mosip.pms.common.entity;
 
 import java.io.Serializable;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import javax.persistence.Column;
@@ -24,7 +23,7 @@ public class PartnerBalance implements Serializable {
     private String partnerId;
 
     @Column(name = "balance", nullable = false, precision = 19, scale = 2)
-    private BigDecimal balance;
+    private double balance;
 
     @Column(name = "cr_by", nullable = false)
     private String crBy;
@@ -48,11 +47,11 @@ public class PartnerBalance implements Serializable {
         this.partnerId = partnerId;
     }
 
-    public BigDecimal getBalance() {
+    public double getBalance() {
         return balance;
     }
 
-    public void setBalance(BigDecimal balance) {
+    public void setBalance(double balance) {
         this.balance = balance;
     }
 

@@ -31,8 +31,8 @@ public class PartnerPaymentTransactions implements Serializable {
     private String entryType;
     // DEBIT, CREDIT
 
-    @Column(name = "amount", nullable = false, precision = 19, scale = 2)
-    private BigDecimal amount;
+    @Column(name = "amount", nullable = false)
+    private double amount;
 
     @Column(name = "source_system", nullable = false)
     private String sourceSystem;
@@ -82,11 +82,11 @@ public class PartnerPaymentTransactions implements Serializable {
         this.entryType = entryType;
     }
 
-    public BigDecimal getAmount() {
+    public double getAmount() {
         return amount;
     }
 
-    public void setAmount(BigDecimal amount) {
+    public void setAmount(double amount) {
         this.amount = amount;
     }
 

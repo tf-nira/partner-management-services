@@ -33,7 +33,8 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
-import java.math.BigDecimal;
+
+import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
 /**
@@ -64,16 +65,21 @@ public class PaymentServiceImpl implements PaymentService {
     private String validatePrnUrl;
 
     @Value("${pmp.prn.minimumBalanceRequired.value}")
-    private BigDecimal minimumBalanceRequired;
+    private double minimumBalanceRequired;
 
+    @PostConstruct
+    public void init() {
+        minimumBalanceRequired = roundToTwo(minimumBalanceRequired);
+    }
 
     @Override
     public PrnResponse generatePrn(PrnRequest request) {
         Partner partnerData = getValidPartner(request.getPartnerId(), false);
-        if(request.getAmount().compareTo(minimumBalanceRequired) < 0){
-            BigDecimal currentBalance = getBalance(request.getPartnerId());
-            BigDecimal accumulatedBalance = currentBalance.add(request.getAmount());
-            if(accumulatedBalance.compareTo(minimumBalanceRequired)< 0){
+        double amount = roundToTwo(request.getAmount());
+        if(amount < minimumBalanceRequired){
+            double currentBalance = roundToTwo(getBalance(request.getPartnerId()));
+            double accumulatedBalance = roundToTwo(currentBalance + amount);
+            if(accumulatedBalance<minimumBalanceRequired){
                 throw new PartnerServiceException(ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorCode(),
                         ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorMessage());
             }
@@ -204,19 +210,23 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     private void addBalance(ValidatePrnRequest request, ValidatePrnResponse response) {
-        BigDecimal creditedAmount = Optional.ofNullable(response.getResponse().getAmountPaid())
-                .orElse(BigDecimal.ZERO);
+        double creditedAmount = roundToTwo(
+                Optional.ofNullable(response.getResponse().getAmountPaid())
+                        .orElse(0.0)
+        );
         PartnerBalance balanceDetails = balanceRepository.findById(request.getPartnerId())
                 .map(existingBalance -> {
-                    BigDecimal current = Optional.ofNullable(existingBalance.getBalance()).orElse(BigDecimal.ZERO);
-                    existingBalance.setBalance(current.add(creditedAmount));
+
+                    double current = existingBalance.getBalance(); // primitive double → no null
+                    double updatedBalance = roundToTwo(current + creditedAmount);
+
+                    existingBalance.setBalance(updatedBalance);
                     existingBalance.setUpdBy(getLoggedInUserId());
                     existingBalance.setUpdDtimes(LocalDateTime.now());
+
                     return existingBalance;
                 })
-                .orElseGet(() -> {
-                    return mapBalanceDetails(request, response);
-                });
+                .orElseGet(() -> mapBalanceDetails(request, response));
         try {
             balanceRepository.save(balanceDetails);
         } catch (Exception dbEx) {
@@ -224,15 +234,15 @@ public class PaymentServiceImpl implements PaymentService {
             auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.BALANCE_DB_SAVE_FAILURE, request.getPartnerId(), "partner");
             throw new ApiAccessibleException("DB_ERROR", "Balance failed to persist");
         }
-        notify(balanceDetails, response.getResponse().getAmountPaid(),response.getResponse().getPrn());
+        notify(balanceDetails, roundToTwo(response.getResponse().getAmountPaid()),response.getResponse().getPrn());
     }
 
-    public BigDecimal getBalance(String partnerId) {
+    public double getBalance(String partnerId) {
         return balanceRepository.findById(partnerId)
-                .map(balance -> Optional.ofNullable(balance.getBalance())
-                        .orElse(BigDecimal.ZERO))
-                .orElse(BigDecimal.ZERO);
+                .map(balance -> balance.getBalance())
+                .orElse(0.0);
     }
+
 
     private boolean isPrnPresent(PrnResponse response) {
         return response != null
@@ -244,7 +254,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PartnerBalance mapBalanceDetails(ValidatePrnRequest request, ValidatePrnResponse response){
         PartnerBalance balanceDetails = new PartnerBalance();
         balanceDetails.setPartnerId(request.getPartnerId());
-        balanceDetails.setBalance(Optional.ofNullable(response.getResponse().getAmountPaid()).orElse(BigDecimal.ZERO));
+        balanceDetails.setBalance(roundToTwo(response.getResponse().getAmountPaid()));
         balanceDetails.setCrBy((getLoggedInUserId()));
         balanceDetails.setCrDtimes(LocalDateTime.now());
         return balanceDetails;
@@ -255,7 +265,7 @@ public class PaymentServiceImpl implements PaymentService {
         partnerPrn.setPartnerId(request.getPartnerId());
         partnerPrn.setPrn(response.getResponse().getData().getPrn());
         partnerPrn.setStatus(PaymentConstants.GENERATED);
-        partnerPrn.setAmount(response.getResponse().getData().getAmount());
+        partnerPrn.setAmount(roundToTwo(response.getResponse().getData().getAmount()));
         partnerPrn.setServiceCode(request.getServiceCode());
         partnerPrn.setRemarks(PaymentConstants.PRN_GENERATED);
         partnerPrn.setCrBy((getLoggedInUserId()));
@@ -268,7 +278,7 @@ public class PaymentServiceImpl implements PaymentService {
         transaction.setTransactionId(response.getResponse().getPrn());
         transaction.setPartnerId(request.getPartnerId());
         transaction.setEntryType(PaymentConstants.CREDIT);
-        transaction.setAmount(response.getResponse().getAmountPaid());
+        transaction.setAmount(roundToTwo(response.getResponse().getAmountPaid()));
         transaction.setSourceSystem(PaymentConstants.PMS);
         transaction.setDescription(PaymentConstants.AMOUNT_CREDITED);
         transaction.setLogDtimes(LocalDateTime.now());
@@ -309,7 +319,7 @@ public class PaymentServiceImpl implements PaymentService {
         return partnerById.get();
     }
 
-    private void notify(PartnerBalance balanceDetails, BigDecimal addedAmount, String prn) {
+    private void notify(PartnerBalance balanceDetails, double addedAmount, String prn) {
         Type type = new Type();
         type.setName("PaymentServiceImpl");
         type.setNamespace("io.mosip.pms.payment.service.impl.PaymentServiceImpl");
@@ -332,5 +342,10 @@ public class PaymentServiceImpl implements PaymentService {
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PAYMENT_SUCCESS);
         return pageDto;
     }
+
+    private double roundToTwo(double value) {
+        return Math.round(value * 100.0) / 100.0;
+    }
+
 
 }
