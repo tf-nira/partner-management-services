@@ -141,10 +141,15 @@ public class SearchHelper {
 					.filter(Objects::nonNull).collect(Collectors.toCollection(() -> predicates));
 		}
 
-		Predicate isDeletedTrue = builder.equal(root.get(DECOMISSION), Boolean.FALSE);
-		Predicate isDeletedNull = builder.isNull(root.get(DECOMISSION));
-		Predicate isDeleted = builder.or(isDeletedTrue, isDeletedNull);
-		predicates.add(isDeleted);
+		try {
+			root.get(DECOMISSION);
+			Predicate isDeletedTrue = builder.equal(root.get(DECOMISSION), Boolean.FALSE);
+			Predicate isDeletedNull = builder.isNull(root.get(DECOMISSION));
+			Predicate isDeleted = builder.or(isDeletedTrue, isDeletedNull);
+			predicates.add(isDeleted);
+		} catch (IllegalArgumentException ex) {
+			// Entity does not have isDeleted field → ignore soft delete filter
+		}
 		if (!predicates.isEmpty()) {
 			Predicate whereClause = builder.and(predicates.toArray(new Predicate[predicates.size()]));
 			selectQuery.where(whereClause);

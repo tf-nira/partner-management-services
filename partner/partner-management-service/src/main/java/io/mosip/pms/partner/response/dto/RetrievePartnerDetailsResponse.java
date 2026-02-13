@@ -19,4 +19,5 @@ public class RetrievePartnerDetailsResponse {
 	private String partnerType;
 	private String policyGroup;
 	private Boolean isActive;
+	private Boolean requiresPayment;
 }

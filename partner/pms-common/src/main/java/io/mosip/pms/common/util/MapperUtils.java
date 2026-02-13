@@ -503,6 +503,7 @@ public class MapperUtils {
 		dataToPublish.setPartnerName(entity.getName());
 		dataToPublish.setPartnerStatus(entity.getIsActive() == true? "ACTIVE" : "DEACTIVE");
 		dataToPublish.setCertificateData(partnerCert);
+		dataToPublish.setRequiresPayment(entity.getRequiresPayment());
 		return dataToPublish;
 	}
 	

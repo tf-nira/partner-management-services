@@ -12,4 +12,6 @@ public class PartnerDataPublishDto {
 	private String certificateData;
 	
 	private String partnerStatus;
+
+	private Boolean requiresPayment;
 }

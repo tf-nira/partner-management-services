@@ -339,6 +339,7 @@ public class PartnerServiceImpl implements PartnerService {
 		partnerHistory.setId(partnerHPK);
 		partnerHistory.setLogoUrl(partner.getLogoUrl());
 		partnerHistory.setAdditionalInfo(partner.getAdditionalInfo());
+		partnerHistory.setRequiresPayment(partner.getRequiresPayment());
 		partnerHRepository.save(partnerHistory);
 	}
 
@@ -360,6 +361,7 @@ public class PartnerServiceImpl implements PartnerService {
 		partner.setApprovalStatus(PartnerConstants.IN_PROGRESS);
 		partner.setLogoUrl(request.getLogoUrl());
 		partner.setAdditionalInfo(request.getAdditionalInfo()== null ? "[]" : request.getAdditionalInfo().toString());
+		partner.setRequiresPayment(request.getRequiresPayment());
 		partner.setCrDtimes(Timestamp.valueOf(LocalDateTime.now()));
 		return partner;
 	}
@@ -720,6 +722,7 @@ public class PartnerServiceImpl implements PartnerService {
 		updateObject.setCertificateAlias(responseObject.getCertificateId());
 		updateObject.setIsActive(true);
 		updateObject.setApprovalStatus(PartnerConstants.APPROVED);
+		updateObject.setRequiresPayment(partner.getRequiresPayment());
 		partnerRepository.save(updateObject);
 		notify(MapperUtils.mapDataToPublishDto(updateObject, signedPartnerCert), EventType.PARTNER_UPDATED);
 		notify(getDataShareurl(responseObject.getSignedCertificateData()), partnerCertRequesteDto.getPartnerDomain());
@@ -1583,6 +1586,7 @@ public class PartnerServiceImpl implements PartnerService {
 		input.setPartnerId(request.getPartnerId());
 		input.setPartnerType(request.getPartnerType());
 		input.setPolicyGroup(request.getPolicyGroup());
+		input.setRequiresPayment(request.getRequiresPayment());
 		return registerPartner(input);
 	}
 	

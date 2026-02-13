@@ -98,6 +98,9 @@ public class PartnerServiceController {
 		PartnerResponse partnerResponse = null;
 		PartnerRequest partnerRequest = null;
 		partnerRequest = request.getRequest();
+		if(partnerRequest.getRequiresPayment()==null){
+			partnerRequest.setRequiresPayment(true);
+		}
 		auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.REGISTER_PARTNER, request.getRequest().getPartnerId(),
 				"partnerId");
 		partnerResponse = partnerService.savePartner(partnerRequest);
