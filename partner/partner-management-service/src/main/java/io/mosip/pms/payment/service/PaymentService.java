@@ -9,7 +9,7 @@ import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
 /**
  *
- * @author Karthik S
+ * @author Karthik S, Jagadeesh
  *
  */
 public interface PaymentService {
