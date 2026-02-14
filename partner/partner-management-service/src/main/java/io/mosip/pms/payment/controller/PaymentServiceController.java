@@ -4,6 +4,7 @@ import io.mosip.kernel.core.http.ResponseFilter;
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.SearchDto;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
+import io.mosip.pms.common.entity.PartnerPrn;
 import io.mosip.pms.common.request.dto.RequestWrapper;
 import io.mosip.pms.common.response.dto.ResponseWrapper;
 import io.mosip.pms.device.util.AuditUtil;
@@ -77,6 +78,18 @@ public class PaymentServiceController {
         ResponseWrapper<PageResponseDto<PartnerPaymentTransactions>> responseWrapper = new ResponseWrapper<>();
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PAYMENT);
         responseWrapper.setResponse(paymentService.searchPayment(request.getRequest()));
+        return responseWrapper;
+    }
+    
+    @ResponseFilter
+    @PostMapping("/prn/search")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerprnsearch())")
+    @Operation(summary = "Service to search prn details", description = "Service to search prn details")
+    public ResponseWrapper<PageResponseDto<PartnerPrn>> searchPartnerPrn(
+            @RequestBody @Valid RequestWrapper<SearchDto> request) {
+        ResponseWrapper<PageResponseDto<PartnerPrn>> responseWrapper = new ResponseWrapper<>();
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_PRN);
+        responseWrapper.setResponse(paymentService.searchPartnerPrn(request.getRequest()));
         return responseWrapper;
     }
 }

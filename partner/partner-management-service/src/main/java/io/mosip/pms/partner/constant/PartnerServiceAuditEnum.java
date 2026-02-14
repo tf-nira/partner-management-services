@@ -255,7 +255,13 @@ public enum PartnerServiceAuditEnum {
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
 	SEARCH_PAYMENT_SUCCESS("PMS_PRT_446", AuditConstant.AUDIT_SYSTEM, "POST SEARCH PAYMENT SUCCESS",
 			"Search Payment Success", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
-			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);;
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	SEARCH_PARTNER_PRN("PMS_PRT_447", AuditConstant.AUDIT_SYSTEM, "POST SEARCH PARTNER PRN",
+			"Search Partner Prn", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	SEARCH_PARTNER_PRN_SUCCESS("PMS_PRT_446", AuditConstant.AUDIT_SYSTEM, "POST SEARCH PARTNER PRN SUCCESS",
+			"Search Partner Prn Success", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);
 	
 	
 	private final String eventId;
