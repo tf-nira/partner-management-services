@@ -4,10 +4,16 @@ import javax.annotation.PostConstruct;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
+@ConditionalOnProperty(
+        name = "websub.subscription.enabled",
+        havingValue = "true",
+        matchIfMissing = true
+)
 @Component
 @EnableScheduling
 public class PartnerAmountSubscriber {
