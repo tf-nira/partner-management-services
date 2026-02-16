@@ -25,8 +25,8 @@ public class PartnerAmountCallbackController {
             consumes = "application/json"
     )
     	@PreAuthenticateContentAndVerifyIntent(secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET
-			+ "}", callback = "${partner.websub.ida.partner.service.callback.secret}", topic = "${" + ConfigKeyConstants.topic + "}")
-    public void handlePartnerAmountUpdated(
+			+ "}", callback = "${pms-websub-partner-service-partner-amount-updated-callback-relative-url}", topic = "${" + ConfigKeyConstants.topic + "}")
+    public void handlePartnerAmountUpdatedAck(
             @RequestBody io.mosip.kernel.core.websub.model.EventModel eventModel) {
         try {
             logger.info("PartnerServiceCallbackController", "PartnerAmountUpdatedAck");

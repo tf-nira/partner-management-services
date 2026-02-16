@@ -15,7 +15,7 @@ public class PmsWebSubHelper {
 
     @Value("${websub.hub.url}")
     private String hubURL;
-    @Value("${partner.websub.ida.partner.service.callback.secret}")
+    @Value("${partner-websub-ida-partner-service-callback-secret}")
     private String callbackSecret;
 
     @Autowired
