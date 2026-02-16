@@ -21,7 +21,7 @@ public class PartnerAmountCallbackController {
 
     private static final Logger logger = PMSLogger.getLogger(PartnerAmountCallbackController.class);
     @PostMapping(
-            value = "/callback/partnermanagement/PARTNERS_AMOUNT_ACK",
+            value = "/callback/partnermanagement/partners_amount_ack",
             consumes = "application/json"
     )
     	@PreAuthenticateContentAndVerifyIntent(secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET
