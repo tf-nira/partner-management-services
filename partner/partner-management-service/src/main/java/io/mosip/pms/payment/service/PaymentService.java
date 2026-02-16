@@ -1,5 +1,6 @@
 package io.mosip.pms.payment.service;
 
+import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.SearchDto;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
@@ -22,5 +23,6 @@ public interface PaymentService {
     public PageResponseDto<PartnerPaymentTransactions> searchPayment(SearchDto dto);
 
 	public PageResponseDto<PartnerPrn> searchPartnerPrn(SearchDto dto);
-	
+
+    public void paymentSettled(EventModel eventModel);
 }
