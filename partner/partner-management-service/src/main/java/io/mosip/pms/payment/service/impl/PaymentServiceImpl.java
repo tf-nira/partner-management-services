@@ -349,12 +349,12 @@ public class PaymentServiceImpl implements PaymentService {
     
     @Override
     public PageResponseDto<PartnerPrn> searchPartnerPrn(SearchDto dto) {
-        List<PartnerPrn> partnerTypes = new ArrayList<>();
+        List<PartnerPrn> partnerPrns = new ArrayList<>();
         PageResponseDto<PartnerPrn> pageDto = new PageResponseDto<>();
         Page<PartnerPrn> page = searchHelper.search(PartnerPrn.class, dto, null);
         if (page.getContent() != null && !page.getContent().isEmpty()) {
-            partnerTypes = MapperUtils.mapAll(page.getContent(), PartnerPrn.class);
-            pageDto = pageUtils.sortPage(partnerTypes, dto.getSort(), dto.getPagination(), page.getTotalElements());
+            partnerPrns = MapperUtils.mapAll(page.getContent(), PartnerPrn.class);
+            pageDto = pageUtils.sortPage(partnerPrns, dto.getSort(), dto.getPagination(), page.getTotalElements());
         }
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_PRN_SUCCESS);
         return pageDto;
