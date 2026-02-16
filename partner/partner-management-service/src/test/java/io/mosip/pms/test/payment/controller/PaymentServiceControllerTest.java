@@ -273,7 +273,7 @@ public class PaymentServiceControllerTest {
 
     @Test
     @WithMockUser(roles = "PARTNER")
-    public void testSearchPartnerPrn_Unauthorized() throws Exception {
+    public void testSearchPartnerPrnFailure() throws Exception {
     	
     	SearchDto searchDto = new SearchDto();
         searchDto.setFilters(Collections.emptyList());
