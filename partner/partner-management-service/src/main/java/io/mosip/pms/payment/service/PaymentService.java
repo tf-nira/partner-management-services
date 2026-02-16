@@ -21,6 +21,6 @@ public interface PaymentService {
 
     public PageResponseDto<PartnerPaymentTransactions> searchPayment(SearchDto dto);
 
-	public PageResponseDto<PartnerPrn> searchPartnerPrn(SearchDto request);
+	public PageResponseDto<PartnerPrn> searchPartnerPrn(SearchDto dto);
 	
 }
