@@ -6,6 +6,8 @@ import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.Pagination;
 import io.mosip.pms.common.dto.SearchDto;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
+import io.mosip.pms.common.entity.PartnerPrn;
+
 import org.junit.Test;
 import io.mosip.pms.payment.controller.PaymentServiceController;
 import io.mosip.pms.payment.request.dto.PrnRequest;
@@ -228,6 +230,67 @@ public class PaymentServiceControllerTest {
                 .andExpect(jsonPath("$.errors").exists());
     }
 
+    @Test
+    @WithMockUser(roles = "PARTNER")
+    public void testSearchPartnerPrn_Success() throws Exception {
+
+    	SearchDto searchDto = new SearchDto();
+        searchDto.setFilters(Collections.emptyList());
+        searchDto.setSort(Collections.emptyList());
+
+        Pagination pagination = new Pagination();
+        pagination.setPageStart(1);
+        pagination.setPageFetch(8);
+        searchDto.setPagination(pagination);
+        
+        RequestWrapper<SearchDto> request = new RequestWrapper<>();
+        request.setRequest(searchDto);
+
+        PartnerPrn prn = new PartnerPrn();
+        prn.setPartnerId("xdfd");
+        prn.setPrn("PRN123");
+        prn.setAmount(Double.valueOf(235));
+        prn.setServiceCode("IDA");
+        prn.setStatus("GENERATED");
+        prn.setRemarks("Prn Generated");
+        
+        List<PartnerPrn> list =
+                Collections.singletonList(prn);
+
+        PageResponseDto<PartnerPrn> pageResponse = new PageResponseDto<>();
+        pageResponse.setFromRecord(1);
+        pageResponse.setToRecord(8);
+        pageResponse.setTotalRecord(8);
+        pageResponse.setData(list);
+
+        Mockito.when(paymentService.searchPartnerPrn(Mockito.any(SearchDto.class)))
+        		.thenReturn(pageResponse);
+        mockMvc.perform(post("/partners/prn/search")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
+
+    @Test
+    @WithMockUser(roles = "PARTNER")
+    public void testSearchPartnerPrn_Unauthorized() throws Exception {
+    	
+    	SearchDto searchDto = new SearchDto();
+        searchDto.setFilters(Collections.emptyList());
+        searchDto.setPagination(new Pagination());
+        
+    	RequestWrapper<SearchDto> request = new RequestWrapper<>();
+        request.setRequest(searchDto);
+        
+        Mockito.when(paymentService.searchPartnerPrn(Mockito.any(SearchDto.class)))
+        .thenThrow(new RuntimeException("Prn Search failed"));
+
+        mockMvc.perform(post("/partners/prn/search")
+                		.contentType(MediaType.APPLICATION_JSON)
+                		.content(objectMapper.writeValueAsString(request)))
+        		.andExpect(status().isOk())
+        		.andExpect(jsonPath("$.errors").exists());
+    }
 
 
 }

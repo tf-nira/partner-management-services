@@ -346,6 +346,19 @@ public class PaymentServiceImpl implements PaymentService {
     private double roundToTwo(double value) {
         return Math.round(value * 100.0) / 100.0;
     }
+    
+    @Override
+    public PageResponseDto<PartnerPrn> searchPartnerPrn(SearchDto dto) {
+        List<PartnerPrn> partnerPrns = new ArrayList<>();
+        PageResponseDto<PartnerPrn> pageDto = new PageResponseDto<>();
+        Page<PartnerPrn> page = searchHelper.search(PartnerPrn.class, dto, null);
+        if (page.getContent() != null && !page.getContent().isEmpty()) {
+            partnerPrns = MapperUtils.mapAll(page.getContent(), PartnerPrn.class);
+            pageDto = pageUtils.sortPage(partnerPrns, dto.getSort(), dto.getPagination(), page.getTotalElements());
+        }
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_PRN_SUCCESS);
+        return pageDto;
+    }
 
 
 }
