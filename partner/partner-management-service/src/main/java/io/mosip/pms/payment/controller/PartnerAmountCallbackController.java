@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 
 @RestController
 public class PartnerAmountCallbackController {
@@ -39,12 +41,16 @@ public class PartnerAmountCallbackController {
 
     @GetMapping("/callback/partnermanagement/partners_amount_ack")
     public ResponseEntity<String> verifySubscription(
-            @RequestParam("hub.mode") String mode,
-            @RequestParam("hub.topic") String topic,
-            @RequestParam("hub.challenge") String challenge,
-            @RequestParam("hub.lease_seconds") String leaseSeconds) {
+            @RequestParam Map<String, String> params) {
 
-        logger.info("Verifying WebSub subscription");
+        logger.info("Received subscription verification request");
+
+        String challenge = params.get("hub.challenge");
+
+        if (challenge == null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         return ResponseEntity.ok(challenge);
     }
 
