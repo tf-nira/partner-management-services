@@ -3,15 +3,14 @@ package io.mosip.pms.payment.controller;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.kernel.websub.api.annotation.PreAuthenticateContentAndVerifyIntent;
-import io.mosip.pms.common.constant.ConfigKeyConstants;
 import io.mosip.pms.common.util.PMSLogger;
 import io.mosip.pms.payment.service.PaymentService;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 
 @RestController
@@ -20,61 +19,20 @@ public class PartnerAmountCallbackController {
     @Autowired
     PaymentService paymentService;
 
+
     private static final Logger logger = PMSLogger.getLogger(PartnerAmountCallbackController.class);
 
-//    @RequestMapping(
-//            value = "/callback/partnermanagement/partners_amount_ack",
-//            method = {RequestMethod.GET, RequestMethod.POST}
-//    )
-//    @PreAuthenticateContentAndVerifyIntent(secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET
-//            + "}", callback = "${pms-websub-partner-service-partner-amount-updated-callback-relative-url}", topic = "${" + ConfigKeyConstants.topic + "}")
-//    public void handlePartnerAmountUpdatedAck(
-//            @RequestBody io.mosip.kernel.core.websub.model.EventModel eventModel) {
-//        try {
-//            logger.info("PartnerServiceCallbackController", "PartnerAmountUpdatedAck");
-//            paymentService.paymentSettled(eventModel);
-//        } catch (Exception e) {
-//            logger.error("PartnerServiceCallbackController",
-//                    ExceptionUtils.getFullStackTrace(e));
-//        }
-//    }
-
-    @GetMapping("/callback/partnermanagement/partners_amount_ack")
-    public ResponseEntity<String> verifySubscription(
-            @RequestParam Map<String, String> params) {
-
-        logger.info("Received subscription verification request");
-
-        String challenge = params.get("hub.challenge");
-
-        if (challenge == null) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return ResponseEntity.ok(challenge);
-    }
-
-    @PostMapping(
-            value = "/callback/partnermanagement/partners_amount_ack",
-            consumes = "application/json"
-    )
-    @PreAuthenticateContentAndVerifyIntent(
-            secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET + "}",
-            callback = "${pms-websub-partner-service-partner-amount-updated-callback-relative-url}",
-            topic = "${" + ConfigKeyConstants.topic + "}"
-    )
-    public void handlePartnerAmountUpdatedAck(
-            @RequestBody EventModel eventModel) {
-
+    @PostMapping(path = "/callback/partnermanagement/partners_amount_ack", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+    @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated}")
+    public ResponseEntity<String> handleSubscribeEvent(@RequestBody EventModel eventModel) throws Exception {
+        logger.info("PartnerServiceCallbackController", "PartnerAmountUpdatedAck");
         try {
-            logger.info("PartnerAmountUpdatedAck received");
             paymentService.paymentSettled(eventModel);
         } catch (Exception e) {
             logger.error("PartnerServiceCallbackController",
                     ExceptionUtils.getFullStackTrace(e));
         }
+        return new ResponseEntity<>("request accepted.", HttpStatus.OK);
     }
-
-
 
 }
