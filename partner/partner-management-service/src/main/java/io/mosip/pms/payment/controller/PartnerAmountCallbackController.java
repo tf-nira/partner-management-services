@@ -7,10 +7,7 @@ import io.mosip.pms.common.util.PMSLogger;
 import io.mosip.pms.payment.service.PaymentService;
 import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
+import org.springframework.web.bind.annotation.*;
 
 
 @RestController
@@ -20,12 +17,14 @@ public class PartnerAmountCallbackController {
     PaymentService paymentService;
 
     private static final Logger logger = PMSLogger.getLogger(PartnerAmountCallbackController.class);
-    @PostMapping(
+
+    @RequestMapping(
             value = "/callback/partnermanagement/partners_amount_ack",
+            method = {RequestMethod.GET, RequestMethod.POST},
             consumes = "application/json"
     )
-    	@PreAuthenticateContentAndVerifyIntent(secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET
-			+ "}", callback = "${pms-websub-partner-service-partner-amount-updated-callback-relative-url}", topic = "${" + ConfigKeyConstants.topic + "}")
+    @PreAuthenticateContentAndVerifyIntent(secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET
+            + "}", callback = "${pms-websub-partner-service-partner-amount-updated-callback-relative-url}", topic = "${" + ConfigKeyConstants.topic + "}")
     public void handlePartnerAmountUpdatedAck(
             @RequestBody io.mosip.kernel.core.websub.model.EventModel eventModel) {
         try {
