@@ -23,8 +23,8 @@ public class PartnerAmountAckInitializer implements ApplicationListener<Applicat
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-        logger.info("onApplicationEvent ... registerForSettledEvents");
-        webSubPublisher.registerForSettledEvents();
+//        logger.info("onApplicationEvent ... registerForSettledEvents");
+//        webSubPublisher.registerForSettledEvents();
         logger.info("onApplicationEvent ... subscribeForSettledEvents");
         webSubPublisher.subscribeForSettledEvents();
 

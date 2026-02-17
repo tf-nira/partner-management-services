@@ -33,8 +33,8 @@ public class WebSubPublisher {
 	@Autowired
 	private PublisherClient<String, EventModel, HttpHeaders> pb;
 
-	@Autowired
-	private PublisherClient<String, Object, HttpHeaders> pbObj;
+//	@Autowired
+//	private PublisherClient<String, Object, HttpHeaders> pbObj;
 
 	@Value("${websub.hub.url}")
 	private String hubURL;
@@ -72,14 +72,14 @@ public class WebSubPublisher {
 		}
 	}
 
-	public void registerForSettledEvents() {
-		try {
-			pbObj.registerTopic(topic, webSubHubPublishUrl);
-		} catch (WebSubClientException e) {
-			logger.info("topic already registered");
-		}
-
-	}
+//	public void registerForSettledEvents() {
+//		try {
+//			pbObj.registerTopic(topic, webSubHubPublishUrl);
+//		} catch (WebSubClientException e) {
+//			logger.info("topic already registered");
+//		}
+//
+//	}
 	
 	public void notify(EventType eventType,Map<String,Object> data,Type type) {
 		sendEventToIDA(createEventModel(eventType,data,type));
