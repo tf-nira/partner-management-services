@@ -19,7 +19,7 @@ public final class PaymentConstants {
     public static final String CREDIT = "CREDIT";
     public static final String PMS = "PMS";
     public static final String AMOUNT_CREDITED = "AMOUNT CREDITED";
-    public static final String PRN ="prn";
+    public static final String PRN ="partnerPrn";
     public static final String PARTNER_ID ="partnerId";
     public static final String AMOUNT_CREDITTED ="amountCredited";
 }
