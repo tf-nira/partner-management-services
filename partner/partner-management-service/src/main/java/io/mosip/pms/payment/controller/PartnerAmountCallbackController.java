@@ -20,8 +20,7 @@ public class PartnerAmountCallbackController {
 
     @RequestMapping(
             value = "/callback/partnermanagement/partners_amount_ack",
-            method = {RequestMethod.GET, RequestMethod.POST},
-            consumes = "application/json"
+            method = {RequestMethod.GET, RequestMethod.POST}
     )
     @PreAuthenticateContentAndVerifyIntent(secret = "${" + ConfigKeyConstants.PARTNER_WEBSUB_IDA_PARTNER_SERVICE_CALLBACK_SECRET
             + "}", callback = "${pms-websub-partner-service-partner-amount-updated-callback-relative-url}", topic = "${" + ConfigKeyConstants.topic + "}")
