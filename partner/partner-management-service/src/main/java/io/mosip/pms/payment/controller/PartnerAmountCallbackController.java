@@ -23,7 +23,7 @@ public class PartnerAmountCallbackController {
     private static final Logger logger = PMSLogger.getLogger(PartnerAmountCallbackController.class);
 
     @PostMapping(path = "/callback/partnermanagement/partners_amount_ack", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
-    @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated}")
+    //@PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated}")
     public ResponseEntity<String> handleSubscribeEvent(@RequestBody EventModel eventModel) throws Exception {
         logger.info("PartnerServiceCallbackController", "PartnerAmountUpdatedAck");
         try {
