@@ -375,11 +375,13 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     public void paymentSettled(EventModel eventModel) {
+        LOGGER.info("entering paymentSettled..........");
         Map<String, Object> eventData = eventModel.getEvent().getData();
         String prn = (String) eventData.get(PaymentConstants.PRN);
         String partnerId = (String)eventData.get(PaymentConstants.PARTNER_ID);
         Boolean isCreditted = (Boolean) eventData.get(PaymentConstants.AMOUNT_CREDITTED);
         if(isCreditted){
+            LOGGER.info("entering isCreditted..........");
             PartnerPrn partnerPrn = getpartnerprndetails(prn,partnerId);
             partnerPrn.setUpdBy(getLoggedInUserId());
             partnerPrn.setUpdDtimes(LocalDateTime.now());
@@ -388,6 +390,7 @@ public class PaymentServiceImpl implements PaymentService {
                 partnerPrnRepository.save(partnerPrn);
                 auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_SUCCESS, prn, "prn");
             } catch (Exception dbEx) {
+                LOGGER.info("paymentsettled catch block........");
                 LOGGER.error("PRN Settled but failed to save  DB: {}", dbEx.getMessage());
                 auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_FAILURE, prn, "prn");
                 throw new ApiAccessibleException("DB_ERROR", "PRN settled but failed to persist");
