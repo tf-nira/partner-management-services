@@ -27,5 +27,5 @@ public interface PaymentService {
 
     public PageResponseDto<PartnerBalance> searchPartnerBalance(SearchDto dto);
 	
-    public void paymentSettled(EventModel eventModel);
+    public void prnStatusUpdateFromIda(EventModel eventModel);
 }
