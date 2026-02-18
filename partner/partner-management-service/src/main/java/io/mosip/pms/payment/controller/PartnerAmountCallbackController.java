@@ -24,15 +24,15 @@ public class PartnerAmountCallbackController {
 
     @PostMapping(path = "/callback/partnermanagement/partners_amount_ack", consumes = MediaType.APPLICATION_JSON_VALUE)
     @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated}")
-    public ResponseEntity<String> handleSubscribeEvent(@RequestBody EventModel eventModel) throws Exception {
-        logger.info("PartnerServiceCallbackController", "PartnerAmountUpdatedAck");
+    public void handleSubscribeEvent(@RequestBody EventModel eventModel) throws Exception {
+        logger.info("PartnerServiceCallbackController..........");
         try {
             paymentService.paymentSettled(eventModel);
         } catch (Exception e) {
+            logger.info("PartnerServiceCallbackController entered exc..........");
             logger.error("PartnerServiceCallbackController",
                     ExceptionUtils.getFullStackTrace(e));
         }
-        return new ResponseEntity<>("request accepted.", HttpStatus.OK);
     }
 
 }
