@@ -1,6 +1,7 @@
 package io.mosip.pms.payment.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.pms.common.constant.EventType;
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.SearchDto;
@@ -373,5 +374,26 @@ public class PaymentServiceImpl implements PaymentService {
         return pageDto;
     }
 
+    public void paymentSettled(EventModel eventModel) {
+        Map<String, Object> eventData = eventModel.getEvent().getData();
+        String prn = (String) eventData.get(PaymentConstants.PRN);
+        String partnerId = (String)eventData.get(PaymentConstants.PARTNER_ID);
+        Boolean isCreditted = (Boolean) eventData.get(PaymentConstants.AMOUNT_CREDITTED);
+        if(isCreditted){
+            PartnerPrn partnerPrn = getpartnerprndetails(prn,partnerId);
+            partnerPrn.setUpdBy(getLoggedInUserId());
+            partnerPrn.setUpdDtimes(LocalDateTime.now());
+            partnerPrn.setStatus(PaymentConstants.SETTLED);
+            try {
+                partnerPrnRepository.save(partnerPrn);
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_SUCCESS, prn, "prn");
+            } catch (Exception dbEx) {
+                LOGGER.error("PRN Settled but failed to save  DB: {}", dbEx.getMessage());
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_FAILURE, prn, "prn");
+                throw new ApiAccessibleException("DB_ERROR", "PRN settled but failed to persist");
+            }
 
+        }
+
+    }
 }

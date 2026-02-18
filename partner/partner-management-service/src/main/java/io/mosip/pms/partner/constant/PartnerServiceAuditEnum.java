@@ -267,6 +267,11 @@ public enum PartnerServiceAuditEnum {
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
 	SEARCH_PARTNER_BALANCE_SUCCESS("PMS_PRT_450", AuditConstant.AUDIT_SYSTEM, "POST SEARCH PARTNER BALANCE SUCCESS",
 			"Search Partner Balance Success", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+	SETTLE_PRN_DB_SAVE_SUCCESS("PMS_PMP_451", AuditConstant.AUDIT_SYSTEM, "SETTLE PRN",
+			"Settle PRN saved successfully", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	SETTLE_PRN_DB_SAVE_FAILURE("PMS_PMP_452", AuditConstant.AUDIT_SYSTEM, "SETTLE PRN",
+			"Settle PRN saved failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);
 	
 	
