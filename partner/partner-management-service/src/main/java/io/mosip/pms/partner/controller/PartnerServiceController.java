@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -80,7 +81,9 @@ public class PartnerServiceController {
 	
 	@Autowired
 	AuditUtil auditUtil;
-	
+
+	@Value("#{'${payment.required.partner.types}'.split(',')}")
+	private List<String> paymentRequiredPartnerTypes;
 	/**
 	 * This API would be used for self registration by partner to create Auth/E-KYC
 	 * Partners. Partner Management module would be integrating with Kernel IAM
@@ -98,8 +101,15 @@ public class PartnerServiceController {
 		PartnerResponse partnerResponse = null;
 		PartnerRequest partnerRequest = null;
 		partnerRequest = request.getRequest();
-		if(partnerRequest.getRequiresPayment()==null){
-			partnerRequest.setRequiresPayment(true);
+		if (partnerRequest.getRequiresPayment() == null) {
+
+			String partnerType = partnerRequest.getPartnerType();
+
+			boolean isPaymentRequired = paymentRequiredPartnerTypes.stream()
+					.map(String::trim)
+					.anyMatch(type -> type.equalsIgnoreCase(partnerType));
+
+			partnerRequest.setRequiresPayment(isPaymentRequired);
 		}
 		auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.REGISTER_PARTNER, request.getRequest().getPartnerId(),
 				"partnerId");
