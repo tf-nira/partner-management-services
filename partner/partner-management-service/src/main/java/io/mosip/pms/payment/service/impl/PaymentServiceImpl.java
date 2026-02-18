@@ -360,5 +360,18 @@ public class PaymentServiceImpl implements PaymentService {
         return pageDto;
     }
 
+    @Override
+    public PageResponseDto<PartnerBalance> searchPartnerBalance(SearchDto dto) {
+        List<PartnerBalance> partnerBalances = new ArrayList<>();
+        PageResponseDto<PartnerBalance> pageDto = new PageResponseDto<>();
+        Page<PartnerBalance> page = searchHelper.search(PartnerBalance.class, dto, null);
+        if (page.getContent() != null && !page.getContent().isEmpty()) {
+            partnerBalances = MapperUtils.mapAll(page.getContent(), PartnerBalance.class);
+            pageDto = pageUtils.sortPage(partnerBalances, dto.getSort(), dto.getPagination(), page.getTotalElements());
+        }
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE_SUCCESS);
+        return pageDto;
+    }
+
 
 }

@@ -150,5 +150,7 @@ public class AuthorizedRolesDto {
 	private List<String> postpaymentsearch;
 
 	private List<String> postpartnerprnsearch;
+
+	private List<String> postpartnerbalancesearch;
 		
 }
