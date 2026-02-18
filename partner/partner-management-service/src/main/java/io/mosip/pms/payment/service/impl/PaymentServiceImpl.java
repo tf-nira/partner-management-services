@@ -374,19 +374,20 @@ public class PaymentServiceImpl implements PaymentService {
         return pageDto;
     }
 
-    public void paymentSettled(EventModel eventModel) {
-        LOGGER.info("entering paymentSettled..........");
+    public void prnStatusUpdateFromIda(EventModel eventModel) {
+        LOGGER.info("Enterring into  prnStatusUpdateFromIda..........");
         Map<String, Object> eventData = eventModel.getEvent().getData();
         String prn = (String) eventData.get(PaymentConstants.PRN);
         String partnerId = (String)eventData.get(PaymentConstants.PARTNER_ID);
         Boolean isCreditted = (Boolean) eventData.get(PaymentConstants.AMOUNT_CREDITTED);
         if(isCreditted){
-            LOGGER.info("entering isCreditted..........");
+            LOGGER.info("Entering isCreditted True.........");
             PartnerPrn partnerPrn = getpartnerprndetails(prn,partnerId);
             partnerPrn.setUpdBy(getLoggedInUserId());
             partnerPrn.setUpdDtimes(LocalDateTime.now());
             partnerPrn.setStatus(PaymentConstants.SETTLED);
             try {
+                LOGGER.info("saving prn status update........");
                 partnerPrnRepository.save(partnerPrn);
                 auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_SUCCESS, prn, "prn");
             } catch (Exception dbEx) {
