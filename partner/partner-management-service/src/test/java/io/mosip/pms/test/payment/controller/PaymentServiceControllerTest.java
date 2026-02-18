@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.Pagination;
 import io.mosip.pms.common.dto.SearchDto;
+import io.mosip.pms.common.entity.PartnerBalance;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.entity.PartnerPrn;
 
@@ -38,6 +39,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Collections;
@@ -292,5 +294,66 @@ public class PaymentServiceControllerTest {
         		.andExpect(jsonPath("$.errors").exists());
     }
 
+    @Test
+    @WithMockUser(roles = "PARTNER")
+    public void testSearchPartnerBalance_Unauthorized() throws Exception {
+
+        SearchDto searchDto = new SearchDto();
+        searchDto.setFilters(Collections.emptyList());
+        searchDto.setPagination(new Pagination());
+
+        RequestWrapper<SearchDto> request = new RequestWrapper<>();
+        request.setRequest(searchDto);
+
+        Mockito.when(paymentService.searchPartnerBalance(Mockito.any(SearchDto.class)))
+                .thenThrow(new RuntimeException("Prn Search failed"));
+
+        mockMvc.perform(post("/partners/balance/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").exists());
+    }
+
+    @Test
+    @WithMockUser(roles = "PARTNER")
+    public void testSearchPartnerBalance_Success() throws Exception {
+
+        SearchDto searchDto = new SearchDto();
+        searchDto.setFilters(Collections.emptyList());
+        searchDto.setSort(Collections.emptyList());
+
+        Pagination pagination = new Pagination();
+        pagination.setPageStart(1);
+        pagination.setPageFetch(8);
+        searchDto.setPagination(pagination);
+
+        RequestWrapper<SearchDto> request = new RequestWrapper<>();
+        request.setRequest(searchDto);
+
+        PartnerBalance balance = new PartnerBalance();
+        balance.setPartnerId("cecf");
+        balance.setBalance(Double.valueOf(235));
+        balance.setCrBy("test");
+        balance.setCrDtimes(LocalDateTime.parse("2026-02-13T10:03:56.998839"));
+        balance.setUpdBy("test");
+        balance.setUpdDtimes(LocalDateTime.parse("2026-02-13T10:03:56.998839"));
+
+        List<PartnerBalance> list =
+                Collections.singletonList(balance);
+
+        PageResponseDto<PartnerBalance> pageResponse = new PageResponseDto<>();
+        pageResponse.setFromRecord(1);
+        pageResponse.setToRecord(8);
+        pageResponse.setTotalRecord(8);
+        pageResponse.setData(list);
+
+        Mockito.when(paymentService.searchPartnerBalance(Mockito.any(SearchDto.class)))
+                .thenReturn(pageResponse);
+        mockMvc.perform(post("/partners/balance/search")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk());
+    }
 
 }

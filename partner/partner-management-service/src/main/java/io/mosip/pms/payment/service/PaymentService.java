@@ -2,6 +2,7 @@ package io.mosip.pms.payment.service;
 
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.SearchDto;
+import io.mosip.pms.common.entity.PartnerBalance;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.entity.PartnerPrn;
 import io.mosip.pms.payment.request.dto.PrnRequest;
@@ -22,5 +23,7 @@ public interface PaymentService {
     public PageResponseDto<PartnerPaymentTransactions> searchPayment(SearchDto dto);
 
 	public PageResponseDto<PartnerPrn> searchPartnerPrn(SearchDto dto);
+
+    public PageResponseDto<PartnerBalance> searchPartnerBalance(SearchDto dto);
 	
 }
