@@ -21,6 +21,7 @@ on:
       - develop
       - MOSIP*
       - tf_nira_payment
+      - tf_nira_dev
 
 jobs:
   build-maven-partner:
