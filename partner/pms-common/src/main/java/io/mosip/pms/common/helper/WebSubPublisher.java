@@ -40,10 +40,14 @@ public class WebSubPublisher {
 	private String hubURL;
 	@Value("${partner-websub-ida-partner-service-callback-secret}")
 	private String callbackSecret;
-	@Value("${pms.websub.topic.partner.amount.updated}")
-	private String topic;
-	@Value("${pms-websub-partner-service-partner-amount-updated-callback-relative-url}")
-	private String callbackUrl;
+	@Value("${pms.websub.topic.partner.amount.updated.ack}")
+	private String ackTopic;
+	@Value("${pms-websub-partner-service-partner-amount-updated-ack-callback-relative-url}")
+	private String callbackUrlSettled;
+	@Value("${pms.websub.topic.partner.balance.updated}")
+	private String balanceUpdateTopic;
+	@Value("${pms-websub-partner-service-partner-balance-updated-callback-relative-url}")
+	private String callbackUrlBalanceUpdate;
 
 	@Autowired
 	protected SubscriptionClient<
@@ -55,31 +59,38 @@ public class WebSubPublisher {
 			initialDelayString = "${websub.event.delay-millisecs}")
 	public void initSubsriptions() {
 		logger.info("Initializing subscribptions... ");
-		subscribeForSettledEvents();
+		subscribeForSettledPrn();
+		subscribeForBalanceUpdate();
 	}
 
-	public void subscribeForSettledEvents() {
+	public void subscribeForSettledPrn() {
 		try {
 			SubscriptionChangeRequest subscriptionRequest = new SubscriptionChangeRequest();
-			subscriptionRequest.setCallbackURL(callbackUrl);
+			subscriptionRequest.setCallbackURL(callbackUrlSettled);
 			subscriptionRequest.setHubURL(hubURL);
 			subscriptionRequest.setSecret(callbackSecret);
-			subscriptionRequest.setTopic(topic);
-			logger.info("subscribing... ");
+			subscriptionRequest.setTopic(ackTopic);
+			logger.info("subscribing... settled");
 			subscriptionClient.subscribe(subscriptionRequest);
 		} catch (WebSubClientException e) {
 			logger.info("error in subscribing... ");
 		}
 	}
 
-//	public void registerForSettledEvents() {
-//		try {
-//			pbObj.registerTopic(topic, webSubHubPublishUrl);
-//		} catch (WebSubClientException e) {
-//			logger.info("topic already registered");
-//		}
-//
-//	}
+	public void subscribeForBalanceUpdate() {
+		try {
+			SubscriptionChangeRequest subscriptionRequest = new SubscriptionChangeRequest();
+			subscriptionRequest.setCallbackURL(callbackUrlBalanceUpdate);
+			subscriptionRequest.setHubURL(hubURL);
+			subscriptionRequest.setSecret(callbackSecret);
+			subscriptionRequest.setTopic(balanceUpdateTopic);
+			logger.info("subscribing... balance");
+			subscriptionClient.subscribe(subscriptionRequest);
+		} catch (WebSubClientException e) {
+			logger.info("error in subscribing... ");
+		}
+	}
+	
 	
 	public void notify(EventType eventType,Map<String,Object> data,Type type) {
 		sendEventToIDA(createEventModel(eventType,data,type));

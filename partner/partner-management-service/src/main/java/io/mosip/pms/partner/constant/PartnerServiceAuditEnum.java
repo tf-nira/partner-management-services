@@ -272,7 +272,13 @@ public enum PartnerServiceAuditEnum {
 			"Settle PRN saved successfully", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
 	SETTLE_PRN_DB_SAVE_FAILURE("PMS_PMP_452", AuditConstant.AUDIT_SYSTEM, "SETTLE PRN",
-			"Settle PRN saved failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"Settle PRN save failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	BALANCE_UPDATE_DB_SAVE_SUCCESS("PMS_PMP_453", AuditConstant.AUDIT_SYSTEM, "BALANCE UPDATE",
+			"Balance update saved successfully", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	BALANCE_UPDATE_DB_SAVE_FAILURE("PMS_PMP_454", AuditConstant.AUDIT_SYSTEM, "BALANCE UPDATE",
+			"Balance update save failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);
 	
 	

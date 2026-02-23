@@ -374,7 +374,7 @@ public class PaymentServiceImpl implements PaymentService {
         return pageDto;
     }
 
-    public void prnStatusUpdateFromIda(EventModel eventModel) {
+    public void prnStatusUpdateIda(EventModel eventModel) {
         LOGGER.info("Enterring into  prnStatusUpdateFromIda..........");
         Map<String, Object> eventData = eventModel.getEvent().getData();
         String prn = (String) eventData.get(PaymentConstants.PRN);
@@ -394,6 +394,34 @@ public class PaymentServiceImpl implements PaymentService {
                 LOGGER.info("paymentsettled catch block........");
                 LOGGER.error("PRN Settled but failed to save  DB: {}", dbEx.getMessage());
                 auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_FAILURE, prn, "prn");
+                throw new ApiAccessibleException("DB_ERROR", "PRN settled but failed to persist");
+            }
+
+        }
+
+    }
+
+    public void partnersBalanceUpdateIda(EventModel eventModel) {
+        LOGGER.info("Enterring into  partnersBalanceUpdateIda..........");
+        Map<String, Object> eventData = eventModel.getEvent().getData();
+        Double balance = (Double) eventData.get(PaymentConstants.BALANCE);
+        String partnerId = (String)eventData.get(PaymentConstants.PARTNER_ID);
+        if(balance!=null &&  !partnerId.isEmpty()){
+            LOGGER.info("Entering isCreditted True.........");
+            PartnerBalance balanceDetails = balanceRepository
+                    .findById(partnerId)
+                    .orElseThrow(() -> new ApiAccessibleException("PARTNER_NOT_FOUND","no partner match found"));
+            balanceDetails.setUpdBy(getLoggedInUserId());
+            balanceDetails.setUpdDtimes(LocalDateTime.now());
+            balanceDetails.setBalance(roundToTwo(balance));
+            try {
+                LOGGER.info("saving prn status update........");
+                balanceRepository.save(balanceDetails);
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.BALANCE_UPDATE_DB_SAVE_SUCCESS, partnerId, "prn");
+            } catch (Exception dbEx) {
+                LOGGER.info("paymentsettled catch block........");
+                LOGGER.error("PRN Settled but failed to save  DB: {}", dbEx.getMessage());
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.BALANCE_UPDATE_DB_SAVE_FAILURE, partnerId, "prn");
                 throw new ApiAccessibleException("DB_ERROR", "PRN settled but failed to persist");
             }
 
