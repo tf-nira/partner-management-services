@@ -13,6 +13,7 @@ import org.apache.commons.lang.exception.ExceptionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.PostConstruct;
@@ -76,4 +77,13 @@ public class PartnerAmountCallbackController {
         }
     }
 
+    @GetMapping(path = "/callback/partnermanagement/partners_balance_update")
+    public ResponseEntity<String> verifyIntent(
+            @RequestParam("hub.mode") String mode,
+            @RequestParam("hub.topic") String topic,
+            @RequestParam("hub.challenge") String challenge,
+            @RequestParam("hub.lease_seconds") String leaseSeconds) {
+        // Manually echo challenge back - this is what intent verification expects
+        return ResponseEntity.ok(challenge);
+    }
 }
