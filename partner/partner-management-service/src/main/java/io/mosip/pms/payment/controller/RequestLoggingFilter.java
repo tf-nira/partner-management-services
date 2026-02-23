@@ -26,11 +26,11 @@ public class RequestLoggingFilter implements Filter {
 
         logger.info("Incoming request: {} {}", wrappedRequest.getMethod(), wrappedRequest.getRequestURI());
 
-        Enumeration<String> headers = wrappedRequest.getHeaderNames();
-        while (headers.hasMoreElements()) {
-            String header = headers.nextElement();
-            logger.info("Header: {} = {}", header, wrappedRequest.getHeader(header));
-        }
+//        Enumeration<String> headers = wrappedRequest.getHeaderNames();
+//        while (headers.hasMoreElements()) {
+//            String header = headers.nextElement();
+//            logger.info("Header: {} = {}", header, wrappedRequest.getHeader(header));
+//        }
 
         chain.doFilter(wrappedRequest, res); // pass wrapped request, not original
 
