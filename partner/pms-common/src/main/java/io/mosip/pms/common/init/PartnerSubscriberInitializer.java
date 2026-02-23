@@ -15,18 +15,17 @@ import org.springframework.stereotype.Component;
         matchIfMissing = true
 )
 @Component
-public class PartnerAmountAckInitializer implements ApplicationListener<ApplicationReadyEvent> {
+public class PartnerSubscriberInitializer implements ApplicationListener<ApplicationReadyEvent> {
 
-    private static final Logger logger = PMSLogger.getLogger(PartnerAmountAckInitializer.class);
+    private static final Logger logger = PMSLogger.getLogger(PartnerSubscriberInitializer.class);
     @Autowired
     WebSubPublisher webSubPublisher;
 
     @Override
     public void onApplicationEvent(ApplicationReadyEvent event) {
-//        logger.info("onApplicationEvent ... registerForSettledEvents");
-//        webSubPublisher.registerForSettledEvents();
         logger.info("onApplicationEvent ... subscribeForSettledEvents");
-        webSubPublisher.subscribeForSettledEvents();
+        webSubPublisher.subscribeForSettledPrn();
+        webSubPublisher.subscribeForBalanceUpdate();
 
     }
 }
