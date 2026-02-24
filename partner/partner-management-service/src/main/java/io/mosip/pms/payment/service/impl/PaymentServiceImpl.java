@@ -1,6 +1,7 @@
 package io.mosip.pms.payment.service.impl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
+import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.pms.common.constant.EventType;
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.SearchDto;
@@ -373,5 +374,58 @@ public class PaymentServiceImpl implements PaymentService {
         return pageDto;
     }
 
+    public void prnStatusUpdateIda(EventModel eventModel) {
+        LOGGER.info("Enterring into  prnStatusUpdateFromIda..........");
+        Map<String, Object> eventData = eventModel.getEvent().getData();
+        String prn = (String) eventData.get(PaymentConstants.PRN);
+        String partnerId = (String)eventData.get(PaymentConstants.PARTNER_ID);
+        Boolean isCreditted = (Boolean) eventData.get(PaymentConstants.AMOUNT_CREDITTED);
+        if(isCreditted){
+            LOGGER.info("Entering isCreditted True.........");
+            PartnerPrn partnerPrn = getpartnerprndetails(prn,partnerId);
+            partnerPrn.setUpdBy(getLoggedInUserId());
+            partnerPrn.setUpdDtimes(LocalDateTime.now());
+            partnerPrn.setStatus(PaymentConstants.SETTLED);
+            try {
+                LOGGER.info("saving prn status update........");
+                partnerPrnRepository.save(partnerPrn);
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_SUCCESS, prn, "prn");
+            } catch (Exception dbEx) {
+                LOGGER.info("paymentsettled catch block........");
+                LOGGER.error("PRN Settled but failed to save  DB: {}", dbEx.getMessage());
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SETTLE_PRN_DB_SAVE_FAILURE, prn, "prn");
+                throw new ApiAccessibleException("DB_ERROR", "PRN settled but failed to persist");
+            }
 
+        }
+
+    }
+
+    public void partnersBalanceUpdateIda(EventModel eventModel) {
+        LOGGER.info("Enterring into  partnersBalanceUpdateIda..........");
+        Map<String, Object> eventData = eventModel.getEvent().getData();
+        Double balance = (Double) eventData.get(PaymentConstants.BALANCE);
+        String partnerId = (String)eventData.get(PaymentConstants.PARTNER_ID);
+        if(balance!=null &&  !partnerId.isEmpty()){
+            LOGGER.info("Entering isCreditted True.........");
+            PartnerBalance balanceDetails = balanceRepository
+                    .findById(partnerId)
+                    .orElseThrow(() -> new ApiAccessibleException("PARTNER_NOT_FOUND","no partner match found"));
+            balanceDetails.setUpdBy(getLoggedInUserId());
+            balanceDetails.setUpdDtimes(LocalDateTime.now());
+            balanceDetails.setBalance(roundToTwo(balance));
+            try {
+                LOGGER.info("saving prn status update........");
+                balanceRepository.save(balanceDetails);
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.BALANCE_UPDATE_DB_SAVE_SUCCESS, partnerId, "prn");
+            } catch (Exception dbEx) {
+                LOGGER.info("paymentsettled catch block........");
+                LOGGER.error("PRN Settled but failed to save  DB: {}", dbEx.getMessage());
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.BALANCE_UPDATE_DB_SAVE_FAILURE, partnerId, "prn");
+                throw new ApiAccessibleException("DB_ERROR", "PRN settled but failed to persist");
+            }
+
+        }
+
+    }
 }

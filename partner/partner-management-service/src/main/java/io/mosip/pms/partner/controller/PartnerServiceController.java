@@ -84,6 +84,7 @@ public class PartnerServiceController {
 
 	@Value("#{'${payment.required.partner.types}'.split(',')}")
 	private List<String> paymentRequiredPartnerTypes;
+	
 	/**
 	 * This API would be used for self registration by partner to create Auth/E-KYC
 	 * Partners. Partner Management module would be integrating with Kernel IAM
