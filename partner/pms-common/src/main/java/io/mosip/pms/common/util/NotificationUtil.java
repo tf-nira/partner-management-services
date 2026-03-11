@@ -69,17 +69,26 @@ public class NotificationUtil {
 		}
 
 		ResponseWrapper<NotificationResponseDto> response = new ResponseWrapper<>();
-		HttpHeaders headers = new HttpHeaders();
-		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+//		HttpHeaders headers = new HttpHeaders();
+//		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		emailMap.add("mailContent", body);
 		emailMap.add("mailSubject", subject);
 		emailMap.add("mailTo", notificationDto.getEmailId());
-		HttpEntity<MultiValueMap<Object, Object>> httpEntity = new HttpEntity<>(emailMap, headers);
+		//HttpEntity<MultiValueMap<Object, Object>> httpEntity = new HttpEntity<>(emailMap, headers);
 		log.info("In emailNotification method of NotificationUtil service emailResourseUrl:", emailResourseUrl);
 		NotificationResponseDto notifierResponse = new NotificationResponseDto();
 		try {
-			Map<String, Object> responseFromEmailAPI = restUtil.postApi(emailResourseUrl, null, "", "",
-					MediaType.MULTIPART_FORM_DATA, httpEntity, Map.class);
+			Map<String, Object> responseFromEmailAPI = restUtil.postApi(
+					emailResourseUrl,
+					null,
+					"",
+					"",
+					MediaType.MULTIPART_FORM_DATA,
+					emailMap,
+					Map.class
+			);
+//					restUtil.postApi(emailResourseUrl, null, "", "",
+//					MediaType.MULTIPART_FORM_DATA, httpEntity, Map.class);
 			notifierResponse = mapper.readValue(mapper.writeValueAsString(responseFromEmailAPI.get("response")),
 					NotificationResponseDto.class);
 		} catch (RestClientException e) {
