@@ -53,10 +53,7 @@ public class PartnerLowBalanceNotificationJob {
 //            initialDelayString = "#{60 * 60 * 1000 * ${pms.balance.notification.init-delay}}",
 //            fixedRateString = "#{60 * 60 * 1000 * ${pms.balance.notification.fixed-rate}}"
 //    )
-    @Scheduled(
-        initialDelayString = "${pms.notifications-schedule.init-delay}",
-        fixedRateString = "${pms.notifications-schedule.fixed-rate}"
-    )
+    @Scheduled(initialDelayString = "${pms.balance.notification.init-delay}", fixedRateString = "${pms.balance.notification.fixed-rate}")
     public void checkLowBalancePartners() {
 
         logger.info("Starting Low Balance Notification Job");
