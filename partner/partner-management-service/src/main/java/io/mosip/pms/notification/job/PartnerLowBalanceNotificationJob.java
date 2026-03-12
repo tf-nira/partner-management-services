@@ -4,10 +4,10 @@ import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.pms.common.constant.EventType;
 import io.mosip.pms.common.entity.Partner;
 import io.mosip.pms.common.entity.PartnerBalance;
-import io.mosip.pms.common.entity.PartnerBalanceNotification;
+import io.mosip.pms.common.entity.NotificationHistory;
 import io.mosip.pms.common.exception.ApiAccessibleException;
-import io.mosip.pms.common.repository.PartnerBalanceNotificationRepository;
 import io.mosip.pms.common.repository.PartnerBalanceRepository;
+import io.mosip.pms.common.repository.NotificationHistoryRepository;
 import io.mosip.pms.common.repository.PartnerServiceRepository;
 import io.mosip.pms.common.response.dto.NotificationDto;
 import io.mosip.pms.common.service.NotificatonService;
@@ -20,8 +20,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Component
 public class PartnerLowBalanceNotificationJob {
@@ -32,7 +32,7 @@ public class PartnerLowBalanceNotificationJob {
     private PartnerBalanceRepository partnerBalanceRepository;
 
     @Autowired
-    private PartnerBalanceNotificationRepository notificationRepo;
+    private NotificationHistoryRepository notificationRepo;
 
     @Autowired
     private NotificatonService notificationService;
@@ -72,15 +72,15 @@ public class PartnerLowBalanceNotificationJob {
                 continue;
             }
 
-            PartnerBalanceNotification record = notificationRepo.findByPartnerIdAndResolvedFalse(partner.getPartnerId());
+            NotificationHistory record = notificationRepo.findByPartnerIdAndResolvedFalse(partner.getPartnerId());
 
             if (record == null) {
                 record = createNewNotification(partner.getPartnerId(), currentLevel);
                 try {
                     notificationRepo.save(record);
                 } catch(Exception dbEx){
-                    logger.error("PartnerBalanceNotification new record  failed to save to local DB: {}", dbEx.getMessage());
-                    throw new ApiAccessibleException("DB_ERROR", "PartnerBalanceNotification new record failed to persist");
+                    logger.error("NotificationHistory new record  failed to save to local DB: {}", dbEx.getMessage());
+                    throw new ApiAccessibleException("DB_ERROR", "NotificationHistory new record failed to persist");
                 }
                 notifications.add(prepareNotificationDto(partner, currentLevel));
                 continue;
@@ -94,8 +94,8 @@ public class PartnerLowBalanceNotificationJob {
                 try {
                     notificationRepo.save(record);
                 } catch(Exception dbEx){
-                    logger.error("PartnerBalanceNotification  update record failed to save to local DB: {}", dbEx.getMessage());
-                    throw new ApiAccessibleException("DB_ERROR", "PartnerBalanceNotification update record failed to persist");
+                    logger.error("NotificationHistory  update record failed to save to local DB: {}", dbEx.getMessage());
+                    throw new ApiAccessibleException("DB_ERROR", "NotificationHistory update record failed to persist");
                 }
                 notifications.add(prepareNotificationDto(partner, currentLevel));
                 continue;
@@ -108,24 +108,39 @@ public class PartnerLowBalanceNotificationJob {
                 try {
                     notificationRepo.save(record);
                 } catch(Exception dbEx){
-                    logger.error("PartnerBalanceNotification  update record failed for configured days to save to local DB: {}", dbEx.getMessage());
-                    throw new ApiAccessibleException("DB_ERROR", "PartnerBalanceNotification update record failed for configured days to persist");
+                    logger.error("NotificationHistory  update record failed for configured days to save to local DB: {}", dbEx.getMessage());
+                    throw new ApiAccessibleException("DB_ERROR", "NotificationHistory update record failed for configured days to persist");
                 }
                 notifications.add(prepareNotificationDto(partner, currentLevel));
             }
         }
 
         if (!notifications.isEmpty()) {
-            notificationService.sendNotications(EventType.PARTNERS_LOW_BALANCE, notifications);
-            logger.info("Notifications sent: {}", notifications.size());
+            List<NotificationDto> level1Notifications = notifications.stream()
+                    .filter(n -> n.getLevel() == 1)
+                    .collect(Collectors.toList());
+
+            List<NotificationDto> level2Notifications = notifications.stream()
+                    .filter(n -> n.getLevel() == 2)
+                    .collect(Collectors.toList());
+
+            if (!level1Notifications.isEmpty()) {
+                notificationService.sendNotications(EventType.PARTNERS_LOW_BALANCE_LEVEL1, level1Notifications);
+                logger.info("Level 1 notifications sent: {}", level1Notifications.size());
+            }
+
+            if (!level2Notifications.isEmpty()) {
+                notificationService.sendNotications(EventType.PARTNERS_LOW_BALANCE_LEVEL2, level2Notifications);
+                logger.info("Level 2 notifications sent: {}", level2Notifications.size());
+            }
         }
         logger.info("Low Balance Notification Job Completed");
     }
 
     private void resolveRestoredBalances() {
-        List<PartnerBalanceNotification> active = notificationRepo.findByResolvedFalse();
+        List<NotificationHistory> active = notificationRepo.findByResolvedFalse();
 
-        for (PartnerBalanceNotification record : active) {
+        for (NotificationHistory record : active) {
             PartnerBalance partner = partnerBalanceRepository.findById(record.getPartnerId()).orElse(null);
             if (partner != null && partner.getBalance() >= warningThreshold) {
                 record.setResolved(true);
@@ -150,9 +165,9 @@ public class PartnerLowBalanceNotificationJob {
         return 0;
     }
 
-    private PartnerBalanceNotification createNewNotification(String partnerId, int level) {
+    private NotificationHistory createNewNotification(String partnerId, int level) {
 
-        return PartnerBalanceNotification.builder()
+        return NotificationHistory.builder()
                 .id(UUID.randomUUID())
                 .partnerId(partnerId)
                 .notificationLevel(level)
@@ -165,12 +180,19 @@ public class PartnerLowBalanceNotificationJob {
     }
 
     private NotificationDto prepareNotificationDto(PartnerBalance partner, int level) {
-        Partner partnerData = getValidPartner(partner.getPartnerId(), false);
-        NotificationDto dto = new NotificationDto();
-        dto.setPartnerId(partnerData.getId());
-        dto.setEmailId(partnerData.getEmailId());
-        dto.setLangCode(partnerData.getLangCode());
-        return dto;
+        try {
+            Partner partnerData = getValidPartner(partner.getPartnerId(), false);
+            NotificationDto dto = new NotificationDto();
+            dto.setPartnerId(partnerData.getId());
+            dto.setPartnerName(partnerData.getName());
+            dto.setEmailId(partnerData.getEmailId());
+            dto.setLangCode(partnerData.getLangCode());
+            dto.setLevel(level);
+            return dto;
+        } catch (PartnerServiceException ex) {
+            logger.error("Skipping low-balance notification for partner {}: {}", partner.getPartnerId(), ex.getMessage());
+            return null;
+        }
     }
 
     private Partner getValidPartner(String partnerId, boolean isToRetrieve) {

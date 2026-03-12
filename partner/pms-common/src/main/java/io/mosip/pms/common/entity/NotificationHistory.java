@@ -18,8 +18,8 @@ import javax.persistence.Table;
 @AllArgsConstructor
 @Builder
 @Entity
-@Table(name = "partner_balance_notification")
-public class PartnerBalanceNotification {
+@Table(name = "notification_history")
+public class NotificationHistory {
 
     @Id
     private UUID id;
