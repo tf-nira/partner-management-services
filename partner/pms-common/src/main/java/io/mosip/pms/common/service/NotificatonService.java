@@ -50,11 +50,17 @@ public class NotificatonService {
 	@Value("${partner.apikey.status.sub-template}")
 	private String apikeyStatusSubjectTemplate;
 
-	@Value("${partner.low.balance.status.content-template}")
-	private String lowBalanceStatusContentTemplate;
+	@Value("${partner.low.balance.level.one.content-template}")
+	private String lowBalanceLevelOneContentTemplate;
 
-	@Value("${partner.low.balance.status.sub-template}")
-	private String lowBalanceStatusSubjectTemplate;
+	@Value("${partner.low.balance.level.one.sub-template}")
+	private String lowBalanceLevelOneSubjectTemplate;
+
+	@Value("${partner.low.balance.level.two.content-template}")
+	private String lowBalanceLevelTwoContentTemplate;
+
+	@Value("${partner.low.balance.level.two.sub-template}")
+	private String lowBalanceLevelTwoSubjectTemplate;
 
 	@Autowired
 	private TemplateUtil templateUtil;
@@ -75,8 +81,13 @@ public class NotificatonService {
 			break;
 		case APIKEY_EXPIRED:
 			sendNotications(notificationDtos, apikeyStatusSubjectTemplate, apikeyStatusContentTemplate);
-		case PARTNERS_LOW_BALANCE:
-			sendNotications(notificationDtos, lowBalanceStatusSubjectTemplate, lowBalanceStatusContentTemplate);
+			break;
+		case PARTNERS_LOW_BALANCE_LEVEL1:
+			sendNotications(notificationDtos, lowBalanceLevelOneSubjectTemplate, lowBalanceLevelOneContentTemplate);
+			break;
+		case PARTNERS_LOW_BALANCE_LEVEL2:
+			sendNotications(notificationDtos, lowBalanceLevelTwoSubjectTemplate, lowBalanceLevelTwoContentTemplate);
+			break;
 		default:
 			break;
 		}

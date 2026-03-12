@@ -7,7 +7,6 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 import org.springframework.util.LinkedMultiValueMap;
@@ -69,12 +68,9 @@ public class NotificationUtil {
 		}
 
 		ResponseWrapper<NotificationResponseDto> response = new ResponseWrapper<>();
-//		HttpHeaders headers = new HttpHeaders();
-//		headers.setContentType(MediaType.MULTIPART_FORM_DATA);
 		emailMap.add("mailContent", body);
 		emailMap.add("mailSubject", subject);
 		emailMap.add("mailTo", notificationDto.getEmailId());
-		//HttpEntity<MultiValueMap<Object, Object>> httpEntity = new HttpEntity<>(emailMap, headers);
 		log.info("In emailNotification method of NotificationUtil service emailResourseUrl:", emailResourseUrl);
 		NotificationResponseDto notifierResponse = new NotificationResponseDto();
 		try {
@@ -87,8 +83,7 @@ public class NotificationUtil {
 					emailMap,
 					Map.class
 			);
-//					restUtil.postApi(emailResourseUrl, null, "", "",
-//					MediaType.MULTIPART_FORM_DATA, httpEntity, Map.class);
+
 			notifierResponse = mapper.readValue(mapper.writeValueAsString(responseFromEmailAPI.get("response")),
 					NotificationResponseDto.class);
 		} catch (RestClientException e) {

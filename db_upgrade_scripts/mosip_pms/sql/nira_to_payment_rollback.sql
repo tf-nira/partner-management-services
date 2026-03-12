@@ -1,7 +1,7 @@
 DROP TABLE IF EXISTS pms.partner_prn;
 DROP TABLE IF EXISTS pms.partner_current_balance;
 DROP TABLE IF EXISTS pms.partner_payment_transactions;
-DROP TABLE IF EXISTS pms.partner_balance_notification;
+DROP TABLE IF EXISTS pms.notification_history;
 
 
 ALTER TABLE pms.partner DROP COLUMN requires_payment;
