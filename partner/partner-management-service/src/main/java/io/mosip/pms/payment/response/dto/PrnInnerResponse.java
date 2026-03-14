@@ -8,8 +8,11 @@ import lombok.Data;
  */
 @Data
 public class PrnInnerResponse {
-
-    private String message;
-    private String code;
-    private PrnData data;
+    private String errorCode;
+    private String errorDesc;
+    private String expiryDate;
+    private String prn;
+    private double amount;
+    private String currency;
+    private Integer numberOfRecords;
 }
