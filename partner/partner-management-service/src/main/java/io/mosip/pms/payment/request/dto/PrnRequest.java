@@ -14,20 +14,18 @@ import lombok.Data;
 @Data
 public class PrnRequest {
 
-    public String service;
+    @NotBlank(message="value is empty or null")
+    public String partnerGroup;
 
-    public String nin;
+    @NotBlank(message="value is empty or null")
+    public String partnerType;
 
-    public String fullName;
-
-    public String remarks;
-
-    @Min(value = 0, message = "value must be >= 0")
-    private double amount;
+    public String partnerName;
 
     @NotBlank(message="value is empty or null")
     public String partnerId;
 
-    private String serviceCode;
+    @NotNull(message="value is empty or null")
+    public Integer numberOfRecords;
 
 }
