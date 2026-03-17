@@ -16,9 +16,6 @@ public class ValidatePrnRequest {
 	@NotBlank(message="value is empty or null")
     private String partnerId;
 
-    private String serviceCode;
-
-    private double amount;
     
     public String getPrn() {
         return prn;
@@ -36,19 +33,4 @@ public class ValidatePrnRequest {
         this.partnerId = partnerId;
     }
 
-    public String getServiceCode() {
-        return serviceCode;
-    }
-
-    public void setServiceCode(String serviceCode) {
-        this.serviceCode = serviceCode;
-    }
-
-    public double getAmount() {
-        return amount;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
 }

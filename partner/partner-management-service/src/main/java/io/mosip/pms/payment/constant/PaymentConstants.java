@@ -14,8 +14,8 @@ public final class PaymentConstants {
     public static final String GENERATED = "GENERATED";
     public static final String PRN_GENERATED = "PRN GENERATED";
     public static final String SETTLED = "SETTLED";
-    public static final String PAID_STATUSCODE = "T";
-    public static final String NOTPAID_STATUSCODE = "A";
+    public static final String PAID_STATUSCODE = "A";
+    public static final String NOTPAID_STATUSCODE = "T";
     public static final String CREDIT = "CREDIT";
     public static final String PMS = "PMS";
     public static final String AMOUNT_CREDITED = "AMOUNT CREDITED";

@@ -76,14 +76,4 @@ public class PartnerAmountCallbackController {
                     ExceptionUtils.getFullStackTrace(e));
         }
     }
-
-//    @GetMapping(path = "/callback/partnermanagement/partners_balance_update")
-//    public ResponseEntity<String> verifyIntent(
-//            @RequestParam("hub.mode") String mode,
-//            @RequestParam("hub.topic") String topic,
-//            @RequestParam("hub.challenge") String challenge,
-//            @RequestParam("hub.lease_seconds") String leaseSeconds) {
-//        // Manually echo challenge back - this is what intent verification expects
-//        return ResponseEntity.ok(challenge);
-//    }
 }
