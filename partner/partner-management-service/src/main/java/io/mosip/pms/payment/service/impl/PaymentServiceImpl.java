@@ -76,24 +76,26 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     public PrnResponse generatePrn(PrnRequest request) {
         Partner partnerData = getValidPartner(request.getPartnerId(), false);
-        double amount = roundToTwo(request.getAmount());
-        if(amount < minimumBalanceRequired){
-            double currentBalance = roundToTwo(getBalance(request.getPartnerId()));
-            double accumulatedBalance = roundToTwo(currentBalance + amount);
-            if(accumulatedBalance<minimumBalanceRequired){
-                throw new PartnerServiceException(ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorCode(),
-                        ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorMessage());
-            }
-        }
-        if (request.getServiceCode() == null || request.getServiceCode().isEmpty()) {
-        	auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_DEFAULT_SERVICE_CODE, "IDA", "serviceCode");
-            request.setServiceCode("IDA");
-        }
-        request.setFullName(partnerData.getName());
-        request.setNin(null);
-        request.setService(PaymentConstants.SERVICE_NEWAID);
+//        double amount = roundToTwo(request.getAmount());
+//        if(amount < minimumBalanceRequired){
+//            double currentBalance = roundToTwo(getBalance(request.getPartnerId()));
+//            double accumulatedBalance = roundToTwo(currentBalance + amount);
+//            if(accumulatedBalance<minimumBalanceRequired){
+//                throw new PartnerServiceException(ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorCode(),
+//                        ErrorCode.PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION.getErrorMessage());
+//            }
+//        }
+//        if (request.getServiceCode() == null || request.getServiceCode().isEmpty()) {
+//        	auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_DEFAULT_SERVICE_CODE, "IDA", "serviceCode");
+//            request.setServiceCode("IDA");
+//        }
+        request.setPartnerName(partnerData.getName());
         try {
-        	auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_EXTERNAL_CALL, request.getPartnerId(), "partnerId");
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_EXTERNAL_CALL, request.getPartnerGroup(), "partnerGroup");
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_EXTERNAL_CALL, request.getPartnerType(), "partnerType");
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_EXTERNAL_CALL, request.getPartnerName(), "partnerName");
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_EXTERNAL_CALL, request.getPartnerId(), "partnerId");
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_EXTERNAL_CALL, String.valueOf(request.getNumberOfRecords()), "numberOfRecords");
             Map<String, Object> apiResponse = restUtil.postApi(
                     generatePrnUrl, null, "", "",
                     MediaType.APPLICATION_JSON, request, Map.class
@@ -103,9 +105,9 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new ApiAccessibleException("EXTERNAL_API_ERROR", "Provider returned an empty response");
             }
             PrnResponse prnResponse = mapper.convertValue(apiResponse, PrnResponse.class);
-            String prn = prnResponse.getResponse().getData().getPrn();
+            String prn = prnResponse.getResponse().getPrn();
             auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.GENERATE_PRN_RESPONSE_MAPPED, prn , "prn");
-            if (isPrnPresent(prnResponse)) {
+            if (!prn.isEmpty()) {
                 try {
                     PartnerPrn partnerPrn = mapPartnerPrnFromRequest(request, prnResponse);
                     partnerPrnRepository.save(partnerPrn);
@@ -176,18 +178,22 @@ public class PaymentServiceImpl implements PaymentService {
         }
         
         String statusCode = validatePrnResponse.getResponse().getStatusCode();
-        processDatabaseUpdates(request, validatePrnResponse, statusCode);
+        Boolean isValidPmsTaxHead = validatePrnResponse.getResponse().isValidPmsTaxHead();
+        processDatabaseUpdates(request, validatePrnResponse, statusCode, isValidPmsTaxHead);
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.VALIDATE_PRN_SUCCESS, request.getPrn(), "prn");
 
         return validatePrnResponse;
     }
 
-    private void processDatabaseUpdates(ValidatePrnRequest request, ValidatePrnResponse response, String statusCode) {
+    private void processDatabaseUpdates(ValidatePrnRequest request, ValidatePrnResponse response, String statusCode, Boolean isValidPmsTaxHead) {
         PartnerPrn partnerPrn = getpartnerprndetails(request.getPrn(), request.getPartnerId());
         partnerPrn.setUpdBy(getLoggedInUserId());
         partnerPrn.setUpdDtimes(LocalDateTime.now());
 
-        if (statusCode.equalsIgnoreCase(PaymentConstants.NOTPAID_STATUSCODE)) {
+        if(!isValidPmsTaxHead){
+            throw new ApiAccessibleException("INVALID  TAXHEAD", "Invalid pms taxHead");
+
+        } else if (statusCode.equalsIgnoreCase(PaymentConstants.NOTPAID_STATUSCODE)) {
             partnerPrn.setStatus(PaymentConstants.VALIDATED_NOT_PAID);
             partnerPrn.setRemarks(PaymentConstants.AMOUNT_NOT_PAID);
             partnerPrnRepository.save(partnerPrn);
@@ -245,12 +251,12 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
 
-    private boolean isPrnPresent(PrnResponse response) {
-        return response != null
-                && response.getResponse() != null
-                && response.getResponse().getData() != null
-                && response.getResponse().getData().getPrn() != null;
-    }
+//    private boolean isPrnPresent(PrnResponse response) {
+//        return response != null
+//                && response.getResponse() != null
+//                && response.getResponse().getData() != null
+//                && response.getResponse().getData().getPrn() != null;
+//    }
 
     private PartnerBalance mapBalanceDetails(ValidatePrnRequest request, ValidatePrnResponse response){
         PartnerBalance balanceDetails = new PartnerBalance();
@@ -264,10 +270,10 @@ public class PaymentServiceImpl implements PaymentService {
     private PartnerPrn mapPartnerPrnFromRequest(PrnRequest request, PrnResponse response){
         PartnerPrn partnerPrn = new PartnerPrn();
         partnerPrn.setPartnerId(request.getPartnerId());
-        partnerPrn.setPrn(response.getResponse().getData().getPrn());
+        partnerPrn.setPrn(response.getResponse().getPrn());
         partnerPrn.setStatus(PaymentConstants.GENERATED);
-        partnerPrn.setAmount(roundToTwo(response.getResponse().getData().getAmount()));
-        partnerPrn.setServiceCode(request.getServiceCode());
+        partnerPrn.setAmount(roundToTwo(response.getResponse().getAmount()));
+        partnerPrn.setServiceCode("PMS");
         partnerPrn.setRemarks(PaymentConstants.PRN_GENERATED);
         partnerPrn.setCrBy((getLoggedInUserId()));
         partnerPrn.setCrDtimes(LocalDateTime.now());
