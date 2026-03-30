@@ -9,6 +9,8 @@ import io.mosip.pms.common.entity.PartnerBalance;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.entity.PartnerPrn;
 
+import io.mosip.pms.payment.response.dto.PrnInnerResponse;
+import io.mosip.pms.payment.response.dto.ValidatePrnInnerResponse;
 import org.junit.Test;
 import io.mosip.pms.payment.controller.PaymentServiceController;
 import io.mosip.pms.payment.request.dto.PrnRequest;
@@ -71,11 +73,10 @@ public class PaymentServiceControllerTest {
     public void testGeneratePrnSuccess() throws Exception {
 
         PrnRequest prnRequest = new PrnRequest();
-        prnRequest.setService("PAYMENT");
         prnRequest.setPartnerId("mosip");
-        prnRequest.setServiceCode("IDA");
-        prnRequest.setNin("1234567890");
-        prnRequest.setFullName("Test User");
+        prnRequest.setPartnerGroup("group1");
+        prnRequest.setPartnerType("type1");
+        prnRequest.setNumberOfRecords(10);
 
         RequestWrapper<PrnRequest> request = new RequestWrapper<>();
         request.setRequest(prnRequest);
@@ -84,15 +85,23 @@ public class PaymentServiceControllerTest {
         request.setRequesttime(ZonedDateTime.now(ZoneOffset.UTC).toLocalDateTime());
         request.setMetadata("{}");
 
+        PrnInnerResponse inner = new PrnInnerResponse();
+        inner.setPrn("PRN123");
+        inner.setAmount(235.0);
+        inner.setCurrency("INR");
+        inner.setExpiryDate("2026-12-31");
+        inner.setNumberOfRecords(10);
+
         PrnResponse prnResponse = new PrnResponse();
         prnResponse.setId("mosip.pms.generate.prn");
         prnResponse.setVersion("1.0");
+        prnResponse.setResponse(inner);
 
-        Mockito.when(paymentService.generatePrn(prnRequest))
-        		.thenReturn(prnResponse);
+        Mockito.when(paymentService.generatePrn(Mockito.any(PrnRequest.class)))
+                .thenReturn(prnResponse);
 
         mockMvc.perform(post("/partners/generatePrn")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
     }
@@ -104,22 +113,28 @@ public class PaymentServiceControllerTest {
         ValidatePrnRequest validateRequest = new ValidatePrnRequest();
         validateRequest.setPrn("2240015260462");
         validateRequest.setPartnerId("mosip");
-        validateRequest.setServiceCode("IDA");
-        validateRequest.setAmount(Double.valueOf(100));
 
-        RequestWrapper<ValidatePrnRequest> wrapper = new RequestWrapper<>();
-        wrapper.setRequest(validateRequest);
+        RequestWrapper<ValidatePrnRequest> request = new RequestWrapper<>();
+        request.setRequest(validateRequest);
+
+        ValidatePrnInnerResponse inner = new ValidatePrnInnerResponse();
+        inner.setPrn("2240015260462");
+        inner.setAmountPaid(235.0);
+        inner.setStatusCode("SUCCESS");
+        inner.setStatusDesc("Valid");
+        inner.setValidPmsTaxHead(true);
 
         ValidatePrnResponse response = new ValidatePrnResponse();
         response.setId("mosip.pms.validate.prn");
         response.setVersion("1.0");
+        response.setResponse(inner);
 
-        Mockito.when(paymentService.validatePrn(validateRequest))
-        		.thenReturn(response);
+        Mockito.when(paymentService.validatePrn(Mockito.any(ValidatePrnRequest.class)))
+                .thenReturn(response);
 
         mockMvc.perform(post("/partners/validatePrn")
-                        .contentType(MediaType.APPLICATION_JSON_VALUE)
-                        .content(objectMapper.writeValueAsString(wrapper)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
     }
 
@@ -128,22 +143,21 @@ public class PaymentServiceControllerTest {
     public void testGeneratePrnFailure() throws Exception {
 
         PrnRequest prnRequest = new PrnRequest();
-        prnRequest.setService("PAYMENT");
         prnRequest.setPartnerId("mosip");
-        prnRequest.setServiceCode("IDA");
-        prnRequest.setNin("1234567890");
-        prnRequest.setFullName("Test User");
+        prnRequest.setPartnerGroup("group1");
+        prnRequest.setPartnerType("type1");
+        prnRequest.setNumberOfRecords(10);
 
         RequestWrapper<PrnRequest> request = new RequestWrapper<>();
         request.setRequest(prnRequest);
 
-        Mockito.when(paymentService.generatePrn(prnRequest))
+        Mockito.when(paymentService.generatePrn(Mockito.any(PrnRequest.class)))
                 .thenThrow(new RuntimeException("PRN generation failed"));
 
         mockMvc.perform(post("/partners/generatePrn")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                .andExpect(status().isOk()) // because controller wraps error in response body
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.errors").exists());
     }
 
@@ -154,18 +168,16 @@ public class PaymentServiceControllerTest {
         ValidatePrnRequest validateRequest = new ValidatePrnRequest();
         validateRequest.setPrn("2240015260462");
         validateRequest.setPartnerId("mosip");
-        validateRequest.setServiceCode("IDA");
-        validateRequest.setAmount(Double.valueOf(100));
 
-        RequestWrapper<ValidatePrnRequest> wrapper = new RequestWrapper<>();
-        wrapper.setRequest(validateRequest);
+        RequestWrapper<ValidatePrnRequest> request = new RequestWrapper<>();
+        request.setRequest(validateRequest);
 
-        Mockito.when(paymentService.validatePrn(validateRequest))
+        Mockito.when(paymentService.validatePrn(Mockito.any(ValidatePrnRequest.class)))
                 .thenThrow(new RuntimeException("Invalid PRN"));
 
         mockMvc.perform(post("/partners/validatePrn")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(wrapper)))
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.errors").exists());
     }
@@ -185,26 +197,21 @@ public class PaymentServiceControllerTest {
 
         RequestWrapper<SearchDto> request = new RequestWrapper<>();
         request.setRequest(searchDto);
-        
-        PartnerPaymentTransactions transaction = new PartnerPaymentTransactions();
-        transaction.setTransactionId("fffff");
-        transaction.setPartnerId("xdfd");
-        transaction.setEntryType("ddfd");
-        transaction.setAmount(Double.valueOf(235));
-        transaction.setSourceSystem("sdsd");
-        transaction.setDescription("fvhfg");
 
-        List<PartnerPaymentTransactions> list =
-                Collections.singletonList(transaction);
+        PartnerPaymentTransactions txn = new PartnerPaymentTransactions();
+        txn.setTransactionId("TXN1");
+        txn.setPartnerId("mosip");
+        txn.setAmount(235.0);
 
         PageResponseDto<PartnerPaymentTransactions> pageResponse = new PageResponseDto<>();
         pageResponse.setFromRecord(1);
         pageResponse.setToRecord(8);
-        pageResponse.setTotalRecord(8);
-        pageResponse.setData(list);
+        pageResponse.setTotalRecord(1);
+        pageResponse.setData(Collections.singletonList(txn));
 
         Mockito.when(paymentService.searchPayment(Mockito.any(SearchDto.class)))
                 .thenReturn(pageResponse);
+
         mockMvc.perform(post("/partners/payment/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -234,69 +241,58 @@ public class PaymentServiceControllerTest {
 
     @Test
     @WithMockUser(roles = "PARTNER")
-    public void testSearchPartnerPrn_Success() throws Exception {
+    public void testSearchPartnerPrnSuccess() throws Exception {
 
-    	SearchDto searchDto = new SearchDto();
+        SearchDto searchDto = new SearchDto();
         searchDto.setFilters(Collections.emptyList());
-        searchDto.setSort(Collections.emptyList());
+        searchDto.setPagination(new Pagination());
 
-        Pagination pagination = new Pagination();
-        pagination.setPageStart(1);
-        pagination.setPageFetch(8);
-        searchDto.setPagination(pagination);
-        
         RequestWrapper<SearchDto> request = new RequestWrapper<>();
         request.setRequest(searchDto);
 
         PartnerPrn prn = new PartnerPrn();
-        prn.setPartnerId("xdfd");
+        prn.setPartnerId("mosip");
         prn.setPrn("PRN123");
-        prn.setAmount(Double.valueOf(235));
-        prn.setServiceCode("IDA");
-        prn.setStatus("GENERATED");
-        prn.setRemarks("Prn Generated");
-        
-        List<PartnerPrn> list =
-                Collections.singletonList(prn);
 
         PageResponseDto<PartnerPrn> pageResponse = new PageResponseDto<>();
         pageResponse.setFromRecord(1);
-        pageResponse.setToRecord(8);
-        pageResponse.setTotalRecord(8);
-        pageResponse.setData(list);
+        pageResponse.setToRecord(1);
+        pageResponse.setTotalRecord(1);
+        pageResponse.setData(Collections.singletonList(prn));
 
         Mockito.when(paymentService.searchPartnerPrn(Mockito.any(SearchDto.class)))
-        		.thenReturn(pageResponse);
+                .thenReturn(pageResponse);
+
         mockMvc.perform(post("/partners/prn/search")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(request)))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isOk());
     }
 
     @Test
     @WithMockUser(roles = "PARTNER")
-    public void testSearchPartnerPrn_Unauthorized() throws Exception {
-    	
-    	SearchDto searchDto = new SearchDto();
+    public void testSearchPartnerPrnFailure() throws Exception {
+
+        SearchDto searchDto = new SearchDto();
         searchDto.setFilters(Collections.emptyList());
         searchDto.setPagination(new Pagination());
-        
-    	RequestWrapper<SearchDto> request = new RequestWrapper<>();
+
+        RequestWrapper<SearchDto> request = new RequestWrapper<>();
         request.setRequest(searchDto);
-        
+
         Mockito.when(paymentService.searchPartnerPrn(Mockito.any(SearchDto.class)))
-        .thenThrow(new RuntimeException("Prn Search failed"));
+                .thenThrow(new RuntimeException("PRN search failed"));
 
         mockMvc.perform(post("/partners/prn/search")
-                		.contentType(MediaType.APPLICATION_JSON)
-                		.content(objectMapper.writeValueAsString(request)))
-        		.andExpect(status().isOk())
-        		.andExpect(jsonPath("$.errors").exists());
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.errors").exists());
     }
 
     @Test
     @WithMockUser(roles = "PARTNER")
-    public void testSearchPartnerBalance_Unauthorized() throws Exception {
+    public void testSearchPartnerBalanceFailure() throws Exception {
 
         SearchDto searchDto = new SearchDto();
         searchDto.setFilters(Collections.emptyList());
@@ -306,7 +302,7 @@ public class PaymentServiceControllerTest {
         request.setRequest(searchDto);
 
         Mockito.when(paymentService.searchPartnerBalance(Mockito.any(SearchDto.class)))
-                .thenThrow(new RuntimeException("Prn Search failed"));
+                .thenThrow(new RuntimeException("Balance search failed"));
 
         mockMvc.perform(post("/partners/balance/search")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -317,39 +313,28 @@ public class PaymentServiceControllerTest {
 
     @Test
     @WithMockUser(roles = "PARTNER")
-    public void testSearchPartnerBalance_Success() throws Exception {
+    public void testSearchPartnerBalanceSuccess() throws Exception {
 
         SearchDto searchDto = new SearchDto();
         searchDto.setFilters(Collections.emptyList());
-        searchDto.setSort(Collections.emptyList());
-
-        Pagination pagination = new Pagination();
-        pagination.setPageStart(1);
-        pagination.setPageFetch(8);
-        searchDto.setPagination(pagination);
+        searchDto.setPagination(new Pagination());
 
         RequestWrapper<SearchDto> request = new RequestWrapper<>();
         request.setRequest(searchDto);
 
         PartnerBalance balance = new PartnerBalance();
-        balance.setPartnerId("cecf");
-        balance.setBalance(Double.valueOf(235));
-        balance.setCrBy("test");
-        balance.setCrDtimes(LocalDateTime.parse("2026-02-13T10:03:56.998839"));
-        balance.setUpdBy("test");
-        balance.setUpdDtimes(LocalDateTime.parse("2026-02-13T10:03:56.998839"));
-
-        List<PartnerBalance> list =
-                Collections.singletonList(balance);
+        balance.setPartnerId("mosip");
+        balance.setBalance(235.0);
 
         PageResponseDto<PartnerBalance> pageResponse = new PageResponseDto<>();
         pageResponse.setFromRecord(1);
-        pageResponse.setToRecord(8);
-        pageResponse.setTotalRecord(8);
-        pageResponse.setData(list);
+        pageResponse.setToRecord(1);
+        pageResponse.setTotalRecord(1);
+        pageResponse.setData(Collections.singletonList(balance));
 
         Mockito.when(paymentService.searchPartnerBalance(Mockito.any(SearchDto.class)))
                 .thenReturn(pageResponse);
+
         mockMvc.perform(post("/partners/balance/search")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
