@@ -26,6 +26,7 @@ public class PartnerSubscriberInitializer implements ApplicationListener<Applica
         logger.info("onApplicationEvent ... subscribeForSettledEvents");
         webSubPublisher.subscribeForSettledPrn();
         webSubPublisher.subscribeForBalanceUpdate();
+        webSubPublisher.subscribeForAuthTransaction();
 
     }
 }

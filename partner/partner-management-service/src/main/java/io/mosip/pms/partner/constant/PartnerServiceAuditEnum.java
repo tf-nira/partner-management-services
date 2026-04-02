@@ -279,6 +279,12 @@ public enum PartnerServiceAuditEnum {
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
 	BALANCE_UPDATE_DB_SAVE_FAILURE("PMS_PMP_454", AuditConstant.AUDIT_SYSTEM, "BALANCE UPDATE",
 			"Balance update save failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	AUTH_TRANSACTION_DB_SAVE_SUCCESS("PMS_PMP_453", AuditConstant.AUDIT_SYSTEM, "AUTH TRANSACTION SAVE",
+			"Auth transaction saved successfully", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
+			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID),
+	AUTH_TRANSACTION_DB_SAVE_FAILURE("PMS_PMP_454", AuditConstant.AUDIT_SYSTEM, "AUTH TRANSACTION SAVE",
+			"Auth transaction save failed", AuditConstant.PARTNER_MODULE_ID, AuditConstant.PARTNER_MODULE_NAME, "NO_ID",
 			"NO_ID_TYPE", AuditConstant.APPLICATION_NAME, AuditConstant.APPLICATION_ID);
 	
 	
