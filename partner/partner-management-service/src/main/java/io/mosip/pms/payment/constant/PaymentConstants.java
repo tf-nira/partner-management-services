@@ -32,5 +32,5 @@ public final class PaymentConstants {
     public static final String STATUS_COMMENT = "status_comment";
     public static final String REQUESTED_ENTITY_ID = "requested_entity_id";
     public static final String REQUESTED_ENTITY_NAME = "requested_entity_name";
-    public static final String AMOUNT = "amount";
+    public static final String CHARGE_AMOUNT = "ChargeAmount";
 }
