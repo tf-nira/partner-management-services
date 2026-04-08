@@ -413,10 +413,10 @@ public class PaymentServiceImpl implements PaymentService {
         String id = (String) eventData.get(PaymentConstants.ID);
         authTransaction.setId(id);
 
-        LocalDateTime requestDtimes = (LocalDateTime) eventData.get(PaymentConstants.REQUEST_DTIMES);
+        LocalDateTime requestDtimes = convertToLocalDateTime(eventData.get(PaymentConstants.REQUEST_DTIMES));
         authTransaction.setRequestDtimes(requestDtimes);
 
-        LocalDateTime responseDtimes = (LocalDateTime) eventData.get(PaymentConstants.RESPONSE_DTIMES);
+        LocalDateTime responseDtimes = convertToLocalDateTime(eventData.get(PaymentConstants.RESPONSE_DTIMES));
         authTransaction.setResponseDtimes(responseDtimes);
 
         String requestTrnId = (String) eventData.get(PaymentConstants.REQUEST_TRN_ID);
@@ -481,5 +481,22 @@ public class PaymentServiceImpl implements PaymentService {
 
         }
 
+    }
+
+    private LocalDateTime convertToLocalDateTime(Object value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return mapper.convertValue(
+                    value,
+                    LocalDateTime.class
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ApiAccessibleException(
+                    "INVALID_TIMESTAMP",
+                    "Invalid datetime format: " + value
+            );
+        }
     }
 }

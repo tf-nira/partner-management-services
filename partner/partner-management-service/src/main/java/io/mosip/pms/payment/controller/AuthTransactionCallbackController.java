@@ -39,6 +39,7 @@ public class AuthTransactionCallbackController {
             logger.info("PartnerServiceCallbackController entered exc..........");
             logger.error("PartnerServiceCallbackController",
                     ExceptionUtils.getFullStackTrace(e));
+            throw e;
         }
     }
 
