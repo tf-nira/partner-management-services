@@ -330,7 +330,7 @@ public class PaymentServiceImplTest {
         data.put(PaymentConstants.STATUS_COMMENT, "Completed");
         data.put(PaymentConstants.REQUESTED_ENTITY_ID, "ENT123");
         data.put(PaymentConstants.REQUESTED_ENTITY_NAME, "PartnerA");
-        data.put(PaymentConstants.AMOUNT, 100.0);
+        data.put(PaymentConstants.CHARGE_AMOUNT, 100.0);
 
         event.setData(data);
         eventModel.setEvent(event);
@@ -368,7 +368,7 @@ public class PaymentServiceImplTest {
         data.put(PaymentConstants.STATUS_COMMENT, "Error");
         data.put(PaymentConstants.REQUESTED_ENTITY_ID, "ENT123");
         data.put(PaymentConstants.REQUESTED_ENTITY_NAME, "PartnerA");
-        data.put(PaymentConstants.AMOUNT, 100.0);
+        data.put(PaymentConstants.CHARGE_AMOUNT, 100.0);
 
         event.setData(data);
         eventModel.setEvent(event);
