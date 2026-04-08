@@ -10,10 +10,7 @@ import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
 import io.mosip.pms.common.helper.SearchHelper;
 import io.mosip.pms.common.helper.WebSubPublisher;
-import io.mosip.pms.common.repository.PartnerBalanceRepository;
-import io.mosip.pms.common.repository.PartnerPaymentTransactionsRepository;
-import io.mosip.pms.common.repository.PartnerPrnRepository;
-import io.mosip.pms.common.repository.PartnerServiceRepository;
+import io.mosip.pms.common.repository.*;
 import io.mosip.pms.common.request.dto.ErrorResponse;
 import io.mosip.pms.common.util.*;
 import io.mosip.pms.device.util.AuditUtil;
@@ -51,6 +48,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final RestUtil restUtil;
     private final ObjectMapper mapper;
     private final PartnerPrnRepository partnerPrnRepository;
+    private final AuthTransactionRepository authTransactionRepository;
     private final PartnerServiceRepository partnerRepository;
     private final PartnerPaymentTransactionsRepository paymentRepository;
     private final PartnerBalanceRepository balanceRepository;
@@ -407,6 +405,56 @@ public class PaymentServiceImpl implements PaymentService {
 
     }
 
+    public void insertPartnersAuthTransaction(EventModel eventModel) {
+        LOGGER.info("Enterring into  insertPartnersAuthTransactions..........");
+        Map<String, Object> eventData = eventModel.getEvent().getData();
+        AuthTransaction authTransaction = new AuthTransaction();
+
+        String id = (String) eventData.get(PaymentConstants.ID);
+        authTransaction.setId(id);
+
+        LocalDateTime requestDtimes = convertToLocalDateTime(eventData.get(PaymentConstants.REQUEST_DTIMES));
+        authTransaction.setRequestDtimes(requestDtimes);
+
+        LocalDateTime responseDtimes = convertToLocalDateTime(eventData.get(PaymentConstants.RESPONSE_DTIMES));
+        authTransaction.setResponseDtimes(responseDtimes);
+
+        String requestTrnId = (String) eventData.get(PaymentConstants.REQUEST_TRN_ID);
+        authTransaction.setRequestTrnId(requestTrnId);
+
+        String authTypeCode = (String) eventData.get(PaymentConstants.AUTH_TYPE_CODE);
+        authTransaction.setAuthTypeCode(authTypeCode);
+
+        String statusCode = (String) eventData.get(PaymentConstants.STATUS_CODE);
+        authTransaction.setStatusCode(statusCode);
+
+        String statusComment = (String) eventData.get(PaymentConstants.STATUS_COMMENT);
+        authTransaction.setStatusComment(statusComment);
+
+        String requestedEntityId = (String) eventData.get(PaymentConstants.REQUESTED_ENTITY_ID);
+        authTransaction.setRequestedEntityId(requestedEntityId);
+
+        String requestedEntityName = (String) eventData.get(PaymentConstants.REQUESTED_ENTITY_NAME);
+        authTransaction.setRequestedEntityName(requestedEntityName);
+
+        double amount = (double) eventData.get(PaymentConstants.AMOUNT);
+        authTransaction.setAmount(amount);
+
+        authTransaction.setCrBy(getLoggedInUserId());
+        authTransaction.setCrDtimes(LocalDateTime.now());
+
+        try {
+            LOGGER.info("saving auth transaction........");
+            authTransactionRepository.save(authTransaction);
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_SUCCESS, requestedEntityName, "partner");
+        } catch (Exception dbEx) {
+            LOGGER.error("auth transaction failed to save in DB: {}", dbEx.getMessage());
+            auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_FAILURE, requestedEntityName, "partner");
+            throw new ApiAccessibleException("DB_ERROR", "auth transaction failed to persist");
+        }
+
+    }
+
     public void partnersBalanceUpdateIda(EventModel eventModel) {
         LOGGER.info("Enterring into  partnersBalanceUpdateIda..........");
         Map<String, Object> eventData = eventModel.getEvent().getData();
@@ -433,5 +481,22 @@ public class PaymentServiceImpl implements PaymentService {
 
         }
 
+    }
+
+    private LocalDateTime convertToLocalDateTime(Object value) {
+        if (value == null) {
+            return null;
+        }
+        try {
+            return mapper.convertValue(
+                    value,
+                    LocalDateTime.class
+            );
+        } catch (IllegalArgumentException e) {
+            throw new ApiAccessibleException(
+                    "INVALID_TIMESTAMP",
+                    "Invalid datetime format: " + value
+            );
+        }
     }
 }

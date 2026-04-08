@@ -30,4 +30,6 @@ public interface PaymentService {
     public void prnStatusUpdateIda(EventModel eventModel);
 
     public void partnersBalanceUpdateIda(EventModel eventModel);
+
+    public void insertPartnersAuthTransaction(EventModel eventModel);
 }

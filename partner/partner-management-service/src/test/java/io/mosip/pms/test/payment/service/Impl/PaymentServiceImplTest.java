@@ -1,12 +1,15 @@
 package io.mosip.pms.test.payment.service.Impl;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.mosip.kernel.core.websub.model.Event;
+import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
 import io.mosip.pms.common.helper.WebSubPublisher;
 import io.mosip.pms.common.repository.*;
 import io.mosip.pms.common.util.RestUtil;
 import io.mosip.pms.device.util.AuditUtil;
+import io.mosip.pms.partner.constant.PartnerServiceAuditEnum;
 import io.mosip.pms.partner.exception.PartnerServiceException;
 import io.mosip.pms.payment.constant.PaymentConstants;
 import io.mosip.pms.payment.request.dto.PrnRequest;
@@ -25,6 +28,7 @@ import org.mockito.*;
 import org.mockito.junit.MockitoJUnitRunner;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDateTime;
 import java.util.*;
 /**
  *
@@ -57,6 +61,9 @@ public class PaymentServiceImplTest {
 
     @Mock
     private PartnerBalanceRepository balanceRepository;
+
+    @Mock
+    private AuthTransactionRepository authTransactionRepository;
 
     @Mock
     private AuditUtil auditUtil;
@@ -304,6 +311,78 @@ public class PaymentServiceImplTest {
         Mockito.when(mapper.convertValue(Mockito.any(), Mockito.eq(ValidatePrnResponse.class)))
                 .thenReturn(response);
         paymentService.validatePrn(request);
+    }
+
+    @Test
+    public void insertPartnersAuthTransaction_Success() {
+
+        EventModel eventModel = new EventModel();
+        Event event = new Event();
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put(PaymentConstants.ID, "TXN123");
+        data.put(PaymentConstants.REQUEST_DTIMES, LocalDateTime.now());
+        data.put(PaymentConstants.RESPONSE_DTIMES, LocalDateTime.now());
+        data.put(PaymentConstants.REQUEST_TRN_ID, "REQ123");
+        data.put(PaymentConstants.AUTH_TYPE_CODE, "OTP");
+        data.put(PaymentConstants.STATUS_CODE, "SUCCESS");
+        data.put(PaymentConstants.STATUS_COMMENT, "Completed");
+        data.put(PaymentConstants.REQUESTED_ENTITY_ID, "ENT123");
+        data.put(PaymentConstants.REQUESTED_ENTITY_NAME, "PartnerA");
+        data.put(PaymentConstants.AMOUNT, 100.0);
+
+        event.setData(data);
+        eventModel.setEvent(event);
+
+        Mockito.when(
+                authTransactionRepository.save(Mockito.any())
+        ).thenReturn(new AuthTransaction());
+
+        paymentService.insertPartnersAuthTransaction(eventModel);
+        Mockito.verify(authTransactionRepository)
+                .save(Mockito.any(AuthTransaction.class));
+
+        Mockito.verify(auditUtil)
+                .setAuditRequestDto(
+                        PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_SUCCESS,
+                        "PartnerA",
+                        "partner"
+                );
+    }
+
+    @Test(expected = ApiAccessibleException.class)
+    public void insertPartnersAuthTransaction_DBFailure() {
+
+        EventModel eventModel = new EventModel();
+        Event event = new Event();
+
+        Map<String, Object> data = new HashMap<>();
+
+        data.put(PaymentConstants.ID, "TXN123");
+        data.put(PaymentConstants.REQUEST_DTIMES, LocalDateTime.now());
+        data.put(PaymentConstants.RESPONSE_DTIMES, LocalDateTime.now());
+        data.put(PaymentConstants.REQUEST_TRN_ID, "REQ123");
+        data.put(PaymentConstants.AUTH_TYPE_CODE, "OTP");
+        data.put(PaymentConstants.STATUS_CODE, "FAILED");
+        data.put(PaymentConstants.STATUS_COMMENT, "Error");
+        data.put(PaymentConstants.REQUESTED_ENTITY_ID, "ENT123");
+        data.put(PaymentConstants.REQUESTED_ENTITY_NAME, "PartnerA");
+        data.put(PaymentConstants.AMOUNT, 100.0);
+
+        event.setData(data);
+        eventModel.setEvent(event);
+        Mockito.when(
+                authTransactionRepository.save(Mockito.any())
+        ).thenThrow(new RuntimeException("DB Error"));
+
+        paymentService.insertPartnersAuthTransaction(eventModel);
+        Mockito.verify(auditUtil)
+                .setAuditRequestDto(
+                        PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_FAILURE,
+                        "PartnerA",
+                        "partner"
+                );
     }
 
 
