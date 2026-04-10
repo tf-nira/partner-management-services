@@ -8,11 +8,11 @@ DROP TABLE IF EXISTS pms.partners_transaction;
 -- partner table
 ALTER TABLE pms.partner 
 DROP COLUMN IF EXISTS requires_payment,
-ADD COLUMN IF NOT EXISTS partnerAuthType character varying(128),
-ADD COLUMN IF NOT EXISTS partnerGroup character varying(128);
+ADD COLUMN IF NOT EXISTS partner_auth_type character varying(128),
+ADD COLUMN IF NOT EXISTS partner_group character varying(128);
 
 -- partner_h table
 ALTER TABLE pms.partner_h 
 DROP COLUMN IF EXISTS requires_payment,
-ADD COLUMN IF NOT EXISTS partnerAuthType character varying(128),
-ADD COLUMN IF NOT EXISTS partnerGroup character varying(128);
+ADD COLUMN IF NOT EXISTS partner_auth_type character varying(128),
+ADD COLUMN IF NOT EXISTS partner_group character varying(128);

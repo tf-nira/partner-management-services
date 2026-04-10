@@ -242,12 +242,12 @@ IS 'Updated DateTimestamp: Date and time when the record was last updated.';
 -- partner table
 ALTER TABLE pms.partner 
 ADD COLUMN IF NOT EXISTS requires_payment boolean NOT NULL DEFAULT false,
-ADD COLUMN IF NOT EXISTS partnerAuthType character varying(128),
-ADD COLUMN IF NOT EXISTS partnerGroup character varying(128);
+ADD COLUMN IF NOT EXISTS partner_auth_type character varying(128),
+ADD COLUMN IF NOT EXISTS partner_group character varying(128);
 
 -- partner_h table
 ALTER TABLE pms.partner_h 
 ADD COLUMN IF NOT EXISTS requires_payment boolean NOT NULL DEFAULT false,
-ADD COLUMN IF NOT EXISTS partnerAuthType character varying(128),
-ADD COLUMN IF NOT EXISTS partnerGroup character varying(128);
+ADD COLUMN IF NOT EXISTS partner_auth_type character varying(128),
+ADD COLUMN IF NOT EXISTS partner_group character varying(128);
 
