@@ -2,6 +2,8 @@ package io.mosip.pms.partner.response.dto;
 
 import lombok.Data;
 
+import java.sql.Timestamp;
+
 /**
  * @author sanjeev.shrivastava
  *
@@ -20,4 +22,5 @@ public class RetrievePartnerDetailsResponse {
 	private String policyGroup;
 	private Boolean isActive;
 	private Boolean requiresPayment;
+	private Timestamp onboardedDate;
 }
