@@ -379,6 +379,19 @@ public class PaymentServiceImpl implements PaymentService {
         return pageDto;
     }
 
+    @Override
+    public PageResponseDto<PartnersTransaction> searchPartnerTransaction(SearchDto dto) {
+        List<PartnersTransaction> partnersTransactionst = new ArrayList<>();
+        PageResponseDto<PartnersTransaction> pageDto = new PageResponseDto<>();
+        Page<PartnersTransaction> page = searchHelper.search(PartnersTransaction.class, dto, null);
+        if (page.getContent() != null && !page.getContent().isEmpty()) {
+            partnersTransactionst = MapperUtils.mapAll(page.getContent(), PartnersTransaction.class);
+            pageDto = pageUtils.sortPage(partnersTransactionst, dto.getSort(), dto.getPagination(), page.getTotalElements());
+        }
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE_SUCCESS);
+        return pageDto;
+    }
+
     public void prnStatusUpdateIda(EventModel eventModel) {
         LOGGER.info("Enterring into  prnStatusUpdateFromIda..........");
         Map<String, Object> eventData = eventModel.getEvent().getData();
