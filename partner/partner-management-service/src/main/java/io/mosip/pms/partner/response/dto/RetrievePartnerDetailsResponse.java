@@ -23,4 +23,6 @@ public class RetrievePartnerDetailsResponse {
 	private Boolean isActive;
 	private Boolean requiresPayment;
 	private Timestamp onboardedDate;
+	private String partnerAuthType;
+	private String partnerGroup;
 }
