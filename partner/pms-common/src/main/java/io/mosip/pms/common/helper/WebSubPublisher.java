@@ -48,6 +48,10 @@ public class WebSubPublisher {
 	private String balanceUpdateTopic;
 	@Value("${pms-websub-partner-service-partner-balance-updated-callback-relative-url}")
 	private String callbackUrlBalanceUpdate;
+	@Value("${pms.websub.topic.partner.auth.transactions}")
+	private String authTransactionTopic;
+	@Value("${pms-websub-partner-service-partner-auth-transaction-callback-relative-url}")
+	private String callbackUrlAuthTransaction;
 
 	@Autowired
 	protected SubscriptionClient<
@@ -61,6 +65,7 @@ public class WebSubPublisher {
 		logger.info("Initializing subscribptions... ");
 		subscribeForSettledPrn();
 		subscribeForBalanceUpdate();
+		subscribeForAuthTransaction();
 	}
 
 	public void subscribeForSettledPrn() {
@@ -90,7 +95,20 @@ public class WebSubPublisher {
 			logger.info("error in subscribing... ");
 		}
 	}
-	
+
+	public void subscribeForAuthTransaction() {
+		try {
+			SubscriptionChangeRequest subscriptionRequest = new SubscriptionChangeRequest();
+			subscriptionRequest.setCallbackURL(callbackUrlAuthTransaction);
+			subscriptionRequest.setHubURL(hubURL);
+			subscriptionRequest.setSecret(callbackSecret);
+			subscriptionRequest.setTopic(authTransactionTopic);
+			logger.info("subscribing... authTransaction");
+			subscriptionClient.subscribe(subscriptionRequest);
+		} catch (WebSubClientException e) {
+			logger.info("error in subscribing... ");
+		}
+	}
 	
 	public void notify(EventType eventType,Map<String,Object> data,Type type) {
 		sendEventToIDA(createEventModel(eventType,data,type));
