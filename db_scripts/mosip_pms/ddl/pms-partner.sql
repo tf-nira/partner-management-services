@@ -21,6 +21,8 @@ CREATE TABLE pms.partner(
 	logo_url character varying(256),
 	addl_info character varying,
 	requires_payment boolean NOT NULL,
+	partnerAuthType character varying(128),
+	partnerGroup character varying(128),
     CONSTRAINT pk_part PRIMARY KEY (id)
 );
 
