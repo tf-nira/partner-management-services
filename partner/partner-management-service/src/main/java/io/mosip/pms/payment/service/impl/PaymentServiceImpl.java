@@ -48,7 +48,7 @@ public class PaymentServiceImpl implements PaymentService {
     private final RestUtil restUtil;
     private final ObjectMapper mapper;
     private final PartnerPrnRepository partnerPrnRepository;
-    private final AuthTransactionRepository authTransactionRepository;
+    private final PartnersTransactionRepository partnersTransactionRepository;
     private final PartnerServiceRepository partnerRepository;
     private final PartnerPaymentTransactionsRepository paymentRepository;
     private final PartnerBalanceRepository balanceRepository;
@@ -204,6 +204,7 @@ public class PaymentServiceImpl implements PaymentService {
             if (!paymentRepository.isTransactionAlreadyExist(request.getPrn())) {
                 PartnerPaymentTransactions transaction = mapTransactionFromResponse(request, response);
                 paymentRepository.save(transaction);
+                saveIntoPartnersTransaction(transaction);
                 addBalance(request, response);
                 LOGGER.info("Successfully processed payment and balance for PRN: {}", request.getPrn());
             }
@@ -409,44 +410,46 @@ public class PaymentServiceImpl implements PaymentService {
         LOGGER.info("Enterring into  insertPartnersAuthTransactions..........");
         Map<String, Object> eventData = eventModel.getEvent().getData();
         if (eventData.get(PaymentConstants.CHARGE_AMOUNT) != null) {
-            AuthTransaction authTransaction = new AuthTransaction();
+            PartnersTransaction partnersTransaction = new PartnersTransaction();
 
             String requestedEntityId = (String) eventData.get(PaymentConstants.REQUESTED_ENTITY_ID);
-            authTransaction.setRequestedEntityId(requestedEntityId);
+            partnersTransaction.setRequestedEntityId(requestedEntityId);
 
             double amount = (double) eventData.get(PaymentConstants.CHARGE_AMOUNT);
-            authTransaction.setAmount(amount);
+            partnersTransaction.setAmount(amount);
 
             String requestedEntityName = (String) eventData.get(PaymentConstants.REQUESTED_ENTITY_NAME);
-            authTransaction.setRequestedEntityName(requestedEntityName);
+            partnersTransaction.setRequestedEntityName(requestedEntityName);
+
+            partnersTransaction.setEntryType(PaymentConstants.DEBIT);
 
             String id = (String) eventData.get(PaymentConstants.ID);
-            authTransaction.setId(id);
+            partnersTransaction.setId(id);
 
             LocalDateTime requestDtimes = convertToLocalDateTime(eventData.get(PaymentConstants.REQUEST_DTIMES));
-            authTransaction.setRequestDtimes(requestDtimes);
+            partnersTransaction.setRequestDtimes(requestDtimes);
 
             LocalDateTime responseDtimes = convertToLocalDateTime(eventData.get(PaymentConstants.RESPONSE_DTIMES));
-            authTransaction.setResponseDtimes(responseDtimes);
+            partnersTransaction.setResponseDtimes(responseDtimes);
 
             String requestTrnId = (String) eventData.get(PaymentConstants.REQUEST_TRN_ID);
-            authTransaction.setRequestTrnId(requestTrnId);
+            partnersTransaction.setRequestTrnId(requestTrnId);
 
             String authTypeCode = (String) eventData.get(PaymentConstants.AUTH_TYPE_CODE);
-            authTransaction.setAuthTypeCode(authTypeCode);
+            partnersTransaction.setAuthTypeCode(authTypeCode);
 
             String statusCode = (String) eventData.get(PaymentConstants.STATUS_CODE);
-            authTransaction.setStatusCode(statusCode);
+            partnersTransaction.setStatusCode(statusCode);
 
             String statusComment = (String) eventData.get(PaymentConstants.STATUS_COMMENT);
-            authTransaction.setStatusComment(statusComment);
+            partnersTransaction.setStatusComment(statusComment);
 
-            authTransaction.setCrBy(PaymentConstants.PMS);
-            authTransaction.setCrDtimes(LocalDateTime.now());
+            partnersTransaction.setCrBy(PaymentConstants.IDA);
+            partnersTransaction.setCrDtimes(LocalDateTime.now());
 
             try {
                 LOGGER.info("saving auth transaction........");
-                authTransactionRepository.save(authTransaction);
+                partnersTransactionRepository.save(partnersTransaction);
                 auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_SUCCESS, requestedEntityName, "partner");
             } catch (Exception dbEx) {
                 LOGGER.error("auth transaction failed to save in DB: {}", dbEx.getMessage());
@@ -454,6 +457,36 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new ApiAccessibleException("DB_ERROR", "auth transaction failed to persist");
             }
         }
+
+    }
+
+    public void saveIntoPartnersTransaction(PartnerPaymentTransactions transaction) {
+        LOGGER.info("Enterring into  saveIntoPartnersAuthTransaction..........");
+            PartnersTransaction partnersTransaction = new PartnersTransaction();
+            Partner partnerData = getValidPartner(transaction.getPartnerId(), false);
+            partnersTransaction.setRequestedEntityId(transaction.getPartnerId());
+            partnersTransaction.setAmount(transaction.getAmount());
+            partnersTransaction.setRequestedEntityName(partnerData.getName());
+            partnersTransaction.setEntryType(PaymentConstants.CREDIT);
+            partnersTransaction.setId(UUID.randomUUID().toString());
+            partnersTransaction.setRequestDtimes(LocalDateTime.now());
+            partnersTransaction.setResponseDtimes(LocalDateTime.now());
+            partnersTransaction.setRequestTrnId(transaction.getTransactionId());
+            partnersTransaction.setAuthTypeCode(null);
+            partnersTransaction.setStatusCode(null);
+            partnersTransaction.setStatusComment(PaymentConstants.AMOUNT_CREDITED);
+            partnersTransaction.setCrBy(PaymentConstants.PMS);
+            partnersTransaction.setCrDtimes(LocalDateTime.now());
+
+            try {
+                LOGGER.info("saving auth transaction........");
+                partnersTransactionRepository.save(partnersTransaction);
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_SUCCESS, transaction.getPartnerId(), "partner");
+            } catch (Exception dbEx) {
+                LOGGER.error("auth transaction failed to save in DB: {}", dbEx.getMessage());
+                auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.AUTH_TRANSACTION_DB_SAVE_FAILURE, transaction.getPartnerId(), "partner");
+                throw new ApiAccessibleException("DB_ERROR", "auth transaction failed to persist");
+            }
 
     }
 

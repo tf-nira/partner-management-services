@@ -14,7 +14,6 @@ import io.mosip.pms.partner.exception.PartnerServiceException;
 import io.mosip.pms.payment.constant.PaymentConstants;
 import io.mosip.pms.payment.request.dto.PrnRequest;
 import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
-import io.mosip.pms.payment.response.dto.PrnData;
 import io.mosip.pms.payment.response.dto.PrnInnerResponse;
 import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnInnerResponse;
@@ -63,7 +62,7 @@ public class PaymentServiceImplTest {
     private PartnerBalanceRepository balanceRepository;
 
     @Mock
-    private AuthTransactionRepository authTransactionRepository;
+    private PartnersTransactionRepository partnersTransactionRepository;
 
     @Mock
     private AuditUtil auditUtil;
@@ -336,12 +335,12 @@ public class PaymentServiceImplTest {
         eventModel.setEvent(event);
 
         Mockito.when(
-                authTransactionRepository.save(Mockito.any())
-        ).thenReturn(new AuthTransaction());
+                partnersTransactionRepository.save(Mockito.any())
+        ).thenReturn(new PartnersTransaction());
 
         paymentService.insertPartnersAuthTransaction(eventModel);
-        Mockito.verify(authTransactionRepository)
-                .save(Mockito.any(AuthTransaction.class));
+        Mockito.verify(partnersTransactionRepository)
+                .save(Mockito.any(PartnersTransaction.class));
 
         Mockito.verify(auditUtil)
                 .setAuditRequestDto(
@@ -373,7 +372,7 @@ public class PaymentServiceImplTest {
         event.setData(data);
         eventModel.setEvent(event);
         Mockito.when(
-                authTransactionRepository.save(Mockito.any())
+                partnersTransactionRepository.save(Mockito.any())
         ).thenThrow(new RuntimeException("DB Error"));
 
         paymentService.insertPartnersAuthTransaction(eventModel);
