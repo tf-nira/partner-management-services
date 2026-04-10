@@ -1,4 +1,4 @@
-id,policy_group_id,name,address,contact_no,email_id,certificate_alias,user_id,partner_type_code,approval_status,is_active,cr_by,cr_dtimes,upd_by,upd_dtimes,requires_payment,partnerAuthType,partnerGroup
+id,policy_group_id,name,address,contact_no,email_id,certificate_alias,user_id,partner_type_code,approval_status,is_active,cr_by,cr_dtimes,upd_by,upd_dtimes,requires_payment,partner_auth_type,partner_group
 mpartner-default-auth,mpolicygroup-default-auth,IITB,mpartner-default-auth,9232121212,info@mosip.io,,mpartner-default-auth,Online_Verification_Partner,approved,TRUE,superadmin,now(),superadmin,now(),FALSE,,
 mpartner-default-abis,mpolicygroup-default-abis,mpartner-default-abis,mpartner-default-abis,9232121212,absi@mosip.io,,mpartner-default-abis,ABIS_Partner,approved,TRUE,superadmin,now(),superadmin,now(),FALSE,,
 mpartner-default-print,mpolicygroup-default-print,IIITB,mpartner-default-print,9232121212,print@mosip.io,,mpartner-default-print,Credential_Partner,approved,TRUE,superadmin,now(),superadmin,now(),FALSE,,
