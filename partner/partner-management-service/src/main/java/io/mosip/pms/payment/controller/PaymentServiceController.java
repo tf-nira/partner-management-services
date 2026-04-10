@@ -6,6 +6,7 @@ import io.mosip.pms.common.dto.SearchDto;
 import io.mosip.pms.common.entity.PartnerBalance;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.entity.PartnerPrn;
+import io.mosip.pms.common.entity.PartnersTransaction;
 import io.mosip.pms.common.request.dto.RequestWrapper;
 import io.mosip.pms.common.response.dto.ResponseWrapper;
 import io.mosip.pms.device.util.AuditUtil;
@@ -103,6 +104,18 @@ public class PaymentServiceController {
         ResponseWrapper<PageResponseDto<PartnerBalance>> responseWrapper = new ResponseWrapper<>();
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE);
         responseWrapper.setResponse(paymentService.searchPartnerBalance(request.getRequest()));
+        return responseWrapper;
+    }
+
+    @ResponseFilter
+    @PostMapping("/transaction/search")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnertransactionsearch())")
+    @Operation(summary = "Service to search balance details", description = "Service to search balance details")
+    public ResponseWrapper<PageResponseDto<PartnersTransaction>> searchPartnerTransaction(
+            @RequestBody @Valid RequestWrapper<SearchDto> request) {
+        ResponseWrapper<PageResponseDto<PartnersTransaction>> responseWrapper = new ResponseWrapper<>();
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE);
+        responseWrapper.setResponse(paymentService.searchPartnerTransaction(request.getRequest()));
         return responseWrapper;
     }
 }
