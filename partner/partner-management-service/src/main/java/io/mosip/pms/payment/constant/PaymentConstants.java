@@ -17,7 +17,9 @@ public final class PaymentConstants {
     public static final String PAID_STATUSCODE = "A";
     public static final String NOTPAID_STATUSCODE = "T";
     public static final String CREDIT = "CREDIT";
+    public static final String DEBIT = "DEBIT";
     public static final String PMS = "PMS";
+    public static final String IDA = "IDA";
     public static final String AMOUNT_CREDITED = "AMOUNT CREDITED";
     public static final String PRN ="prn";
     public static final String BALANCE ="balance";

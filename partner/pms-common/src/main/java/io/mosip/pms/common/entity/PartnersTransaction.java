@@ -15,8 +15,8 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "auth_transaction")
-public class AuthTransaction implements Serializable {
+@Table(name = "partners_transaction")
+public class PartnersTransaction implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
@@ -42,11 +42,14 @@ public class AuthTransaction implements Serializable {
     @Column(name = "status_comment", length = 1024)
     private String statusComment;
 
-    @Column(name = "requested_entity_id", length = 36)
+    @Column(name = "partner_id", length = 36)
     private String requestedEntityId;
 
-    @Column(name = "requested_entity_name", length = 128)
+    @Column(name = "partner_name", length = 128)
     private String requestedEntityName;
+
+    @Column(name = "entry_type", length = 128)
+    private String entryType;
 
     @Column(name = "amount")
     private double amount;
