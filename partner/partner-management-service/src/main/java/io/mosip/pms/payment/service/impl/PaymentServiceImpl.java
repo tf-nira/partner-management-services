@@ -269,6 +269,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PartnerPrn mapPartnerPrnFromRequest(PrnRequest request, PrnResponse response){
         PartnerPrn partnerPrn = new PartnerPrn();
         partnerPrn.setPartnerId(request.getPartnerId());
+        partnerPrn.setPartnerName(request.getPartnerName());
         partnerPrn.setPrn(response.getResponse().getPrn());
         partnerPrn.setStatus(PaymentConstants.GENERATED);
         partnerPrn.setAmount(roundToTwo(response.getResponse().getAmount()));
