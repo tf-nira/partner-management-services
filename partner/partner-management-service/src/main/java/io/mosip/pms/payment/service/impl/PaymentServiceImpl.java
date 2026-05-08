@@ -454,10 +454,20 @@ public class PaymentServiceImpl implements PaymentService {
             partnersTransaction.setRequestTrnId(requestTrnId);
 
             String authTypeCode = (String) eventData.get(PaymentConstants.AUTH_TYPE_CODE);
-            partnersTransaction.setAuthTypeCode(authTypeCode);
+
+            if (authTypeCode != null && authTypeCode.contains("EKYC-AUTH")) {
+                partnersTransaction.setAuthTypeCode("Access");
+            } else {
+                partnersTransaction.setAuthTypeCode("Verify");
+            }
 
             String statusCode = (String) eventData.get(PaymentConstants.STATUS_CODE);
-            partnersTransaction.setStatusCode(statusCode);
+
+            if ("Y".equalsIgnoreCase(statusCode)) {
+                partnersTransaction.setStatusCode("Success");
+            } else if ("N".equalsIgnoreCase(statusCode)) {
+                partnersTransaction.setStatusCode("Failed");
+            }
 
             String statusComment = (String) eventData.get(PaymentConstants.STATUS_COMMENT);
             partnersTransaction.setStatusComment(statusComment);
