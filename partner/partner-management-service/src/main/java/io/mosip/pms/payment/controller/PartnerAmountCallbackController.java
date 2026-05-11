@@ -46,7 +46,7 @@ public class PartnerAmountCallbackController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
-  //@PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated.ack}")
+  @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated.ack}")
     public void prnStatusUpdateEvent(@RequestBody EventModel eventModel) throws Exception {
         logger.info("Enterring Into prnStatusUpdateEvent..........");
         try {
@@ -65,7 +65,7 @@ public class PartnerAmountCallbackController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
-   //@PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_balance_update", topic = "${pms.websub.topic.partner.balance.updated}")
+   @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_balance_update", topic = "${pms.websub.topic.partner.balance.updated}")
     public void partnersBalanceUpdateEvent(@RequestBody EventModel eventModel) throws Exception {
         logger.info("Enterring Into partnersBalanceUpdateIda..........");
         try {
