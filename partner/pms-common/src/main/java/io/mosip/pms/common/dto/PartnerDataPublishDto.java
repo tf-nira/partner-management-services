@@ -2,7 +2,6 @@ package io.mosip.pms.common.dto;
 
 import lombok.Data;
 
-import javax.persistence.Column;
 
 @Data
 public class PartnerDataPublishDto {
