@@ -3,16 +3,18 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.pms.common.constant.EventType;
-import io.mosip.pms.common.dto.PageResponseDto;
-import io.mosip.pms.common.dto.SearchDto;
-import io.mosip.pms.common.dto.Type;
+import io.mosip.pms.common.dto.*;
 import io.mosip.pms.common.entity.*;
 import io.mosip.pms.common.exception.ApiAccessibleException;
+import io.mosip.pms.common.helper.FilterHelper;
 import io.mosip.pms.common.helper.SearchHelper;
 import io.mosip.pms.common.helper.WebSubPublisher;
 import io.mosip.pms.common.repository.*;
 import io.mosip.pms.common.request.dto.ErrorResponse;
 import io.mosip.pms.common.util.*;
+import io.mosip.pms.common.validator.FilterColumnValidator;
+import io.mosip.pms.device.response.dto.ColumnCodeValue;
+import io.mosip.pms.device.response.dto.FilterResponseCodeDto;
 import io.mosip.pms.device.util.AuditUtil;
 import io.mosip.pms.partner.constant.ErrorCode;
 import io.mosip.pms.partner.constant.PartnerConstants;
@@ -56,6 +58,8 @@ public class PaymentServiceImpl implements PaymentService {
     private final WebSubPublisher webSubPublisher;
     private final SearchHelper searchHelper;
     private final PageUtils pageUtils;
+    private final FilterColumnValidator filterColumnValidator;
+    private final FilterHelper filterHelper;
 
     @Value("${pmp.prn.generate.rest.uri}")
     private String generatePrnUrl;
@@ -269,6 +273,7 @@ public class PaymentServiceImpl implements PaymentService {
     private PartnerPrn mapPartnerPrnFromRequest(PrnRequest request, PrnResponse response){
         PartnerPrn partnerPrn = new PartnerPrn();
         partnerPrn.setPartnerId(request.getPartnerId());
+        partnerPrn.setPartnerName(request.getPartnerName());
         partnerPrn.setPrn(response.getResponse().getPrn());
         partnerPrn.setStatus(PaymentConstants.GENERATED);
         partnerPrn.setAmount(roundToTwo(response.getResponse().getAmount()));
@@ -449,10 +454,20 @@ public class PaymentServiceImpl implements PaymentService {
             partnersTransaction.setRequestTrnId(requestTrnId);
 
             String authTypeCode = (String) eventData.get(PaymentConstants.AUTH_TYPE_CODE);
-            partnersTransaction.setAuthTypeCode(authTypeCode);
+
+            if (authTypeCode != null && authTypeCode.contains("EKYC-AUTH")) {
+                partnersTransaction.setAuthTypeCode("Access");
+            } else {
+                partnersTransaction.setAuthTypeCode("Verify");
+            }
 
             String statusCode = (String) eventData.get(PaymentConstants.STATUS_CODE);
-            partnersTransaction.setStatusCode(statusCode);
+
+            if ("Y".equalsIgnoreCase(statusCode)) {
+                partnersTransaction.setStatusCode("Success");
+            } else if ("N".equalsIgnoreCase(statusCode)) {
+                partnersTransaction.setStatusCode("Failed");
+            }
 
             String statusComment = (String) eventData.get(PaymentConstants.STATUS_COMMENT);
             partnersTransaction.setStatusComment(statusComment);
@@ -546,5 +561,34 @@ public class PaymentServiceImpl implements PaymentService {
                     "Invalid datetime format: " + value
             );
         }
+    }
+
+    @Override
+    public FilterResponseCodeDto filterValuesPrn(FilterValueDto filterValueDto) {
+        FilterResponseCodeDto filterResponseDto = new FilterResponseCodeDto();
+        List<ColumnCodeValue> columnValueList = new ArrayList<>();
+        if(searchHelper.isLoggedInUserFilterRequired()) {
+            SearchFilter loggedInUserFilterDto = new SearchFilter();
+            loggedInUserFilterDto.setColumnName("id");
+            loggedInUserFilterDto.setValue(getLoggedInUserId());
+            loggedInUserFilterDto.setType("equals");
+            filterValueDto.getOptionalFilters().add(loggedInUserFilterDto);
+        }
+        if (filterColumnValidator.validate(FilterDto.class, filterValueDto.getFilters(), PartnersTransaction.class)) {
+            for (FilterDto filterDto : filterValueDto.getFilters()) {
+                List<FilterData> filterValues = filterHelper.filterValuesWithCode(PartnersTransaction.class,
+                        filterDto, filterValueDto, "id");
+                filterValues.forEach(filterValue -> {
+                    ColumnCodeValue columnValue = new ColumnCodeValue();
+                    columnValue.setFieldCode(filterValue.getFieldCode());
+                    columnValue.setFieldID(filterDto.getColumnName());
+                    columnValue.setFieldValue(filterValue.getFieldValue());
+                    columnValueList.add(columnValue);
+                });
+            }
+            filterResponseDto.setFilters(columnValueList);
+        }
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.FILTER_PARTNER_SUCCESS);
+        return filterResponseDto;
     }
 }
