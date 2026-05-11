@@ -730,6 +730,8 @@ public class PartnerServiceImpl implements PartnerService {
 		updateObject.setIsActive(true);
 		updateObject.setApprovalStatus(PartnerConstants.APPROVED);
 		updateObject.setRequiresPayment(partner.getRequiresPayment());
+		updateObject.setPartnerAuthType(partner.getPartnerAuthType());
+		updateObject.setPartnerGroup(partner.getPartnerGroup());
 		partnerRepository.save(updateObject);
 		notify(MapperUtils.mapDataToPublishDto(updateObject, signedPartnerCert), EventType.PARTNER_UPDATED);
 		notify(getDataShareurl(responseObject.getSignedCertificateData()), partnerCertRequesteDto.getPartnerDomain());
