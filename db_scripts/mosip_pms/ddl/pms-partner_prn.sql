@@ -1,6 +1,7 @@
 
 CREATE TABLE partner_prn (
     partner_id   character varying(36) NOT NULL,
+	partner_name character varying(128) NOT NULL,
     prn          character varying(36) NOT NULL,
     status       character varying(36) NOT NULL,
     amount       numeric NOT NULL,

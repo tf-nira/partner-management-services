@@ -340,6 +340,8 @@ public class PartnerServiceImpl implements PartnerService {
 		partnerHistory.setLogoUrl(partner.getLogoUrl());
 		partnerHistory.setAdditionalInfo(partner.getAdditionalInfo());
 		partnerHistory.setRequiresPayment(partner.getRequiresPayment());
+		partnerHistory.setPartnerAuthType(partner.getPartnerAuthType());
+		partnerHistory.setPartnerGroup(partner.getPartnerGroup());
 		partnerHRepository.save(partnerHistory);
 	}
 
@@ -362,6 +364,8 @@ public class PartnerServiceImpl implements PartnerService {
 		partner.setLogoUrl(request.getLogoUrl());
 		partner.setAdditionalInfo(request.getAdditionalInfo()== null ? "[]" : request.getAdditionalInfo().toString());
 		partner.setRequiresPayment(request.getRequiresPayment());
+		partner.setPartnerAuthType(request.getPartnerAuthType());
+		partner.setPartnerGroup(request.getPartnerGroup());
 		partner.setCrDtimes(Timestamp.valueOf(LocalDateTime.now()));
 		return partner;
 	}
@@ -461,6 +465,9 @@ public class PartnerServiceImpl implements PartnerService {
 		response.setPartnerType(partner.getPartnerTypeCode());
 		response.setStatus(partner.getIsActive() == true ? PartnerConstants.ACTIVE : PartnerConstants.DEACTIVE);
 		response.setIsActive(partner.getIsActive());
+		response.setOnboardedDate(partner.getCrDtimes());
+		response.setPartnerAuthType(partner.getPartnerAuthType());
+		response.setPartnerGroup(partner.getPartnerGroup());
 		if (partner.getPolicyGroupId() != null) {
 			response.setPolicyGroup(validateAndGetPolicyGroupById(partner.getPolicyGroupId()).getName());
 		}
@@ -723,6 +730,8 @@ public class PartnerServiceImpl implements PartnerService {
 		updateObject.setIsActive(true);
 		updateObject.setApprovalStatus(PartnerConstants.APPROVED);
 		updateObject.setRequiresPayment(partner.getRequiresPayment());
+		updateObject.setPartnerAuthType(partner.getPartnerAuthType());
+		updateObject.setPartnerGroup(partner.getPartnerGroup());
 		partnerRepository.save(updateObject);
 		notify(MapperUtils.mapDataToPublishDto(updateObject, signedPartnerCert), EventType.PARTNER_UPDATED);
 		notify(getDataShareurl(responseObject.getSignedCertificateData()), partnerCertRequesteDto.getPartnerDomain());
@@ -1587,6 +1596,8 @@ public class PartnerServiceImpl implements PartnerService {
 		input.setPartnerType(request.getPartnerType());
 		input.setPolicyGroup(request.getPolicyGroup());
 		input.setRequiresPayment(request.getRequiresPayment());
+		input.setPartnerAuthType(request.getPartnerAuthType());
+		input.setPartnerGroup(request.getPartnerGroup());
 		return registerPartner(input);
 	}
 	

@@ -504,6 +504,8 @@ public class MapperUtils {
 		dataToPublish.setPartnerStatus(entity.getIsActive() == true? "ACTIVE" : "DEACTIVE");
 		dataToPublish.setCertificateData(partnerCert);
 		dataToPublish.setRequiresPayment(entity.getRequiresPayment());
+		dataToPublish.setPartnerAuthType(entity.getPartnerAuthType());
+		dataToPublish.setPartnerGroup(entity.getPartnerGroup());
 		return dataToPublish;
 	}
 	

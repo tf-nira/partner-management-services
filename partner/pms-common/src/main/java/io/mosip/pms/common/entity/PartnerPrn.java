@@ -21,6 +21,9 @@ public class PartnerPrn implements Serializable {
     @Column(name = "partner_id", nullable = false)
     private String partnerId;
 
+    @Column(name="partner_name")
+    private String partnerName;
+
     @Id
     @Column(name = "prn", nullable = false)
     private String prn;
@@ -60,6 +63,10 @@ public class PartnerPrn implements Serializable {
     public void setPartnerId(String partnerId) {
         this.partnerId = partnerId;
     }
+
+    public String getPartnerName() {return partnerName;}
+
+    public void setPartnerName(String partnerName) {this.partnerName = partnerName;}
 
     public String getPrn() {
         return prn;

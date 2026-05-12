@@ -1,13 +1,16 @@
 package io.mosip.pms.payment.controller;
 
 import io.mosip.kernel.core.http.ResponseFilter;
+import io.mosip.pms.common.dto.FilterValueDto;
 import io.mosip.pms.common.dto.PageResponseDto;
 import io.mosip.pms.common.dto.SearchDto;
 import io.mosip.pms.common.entity.PartnerBalance;
 import io.mosip.pms.common.entity.PartnerPaymentTransactions;
 import io.mosip.pms.common.entity.PartnerPrn;
+import io.mosip.pms.common.entity.PartnersTransaction;
 import io.mosip.pms.common.request.dto.RequestWrapper;
 import io.mosip.pms.common.response.dto.ResponseWrapper;
+import io.mosip.pms.device.response.dto.FilterResponseCodeDto;
 import io.mosip.pms.device.util.AuditUtil;
 import io.mosip.pms.partner.constant.PartnerServiceAuditEnum;
 import io.mosip.pms.payment.service.PaymentService;
@@ -103,6 +106,30 @@ public class PaymentServiceController {
         ResponseWrapper<PageResponseDto<PartnerBalance>> responseWrapper = new ResponseWrapper<>();
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE);
         responseWrapper.setResponse(paymentService.searchPartnerBalance(request.getRequest()));
+        return responseWrapper;
+    }
+
+    @ResponseFilter
+    @PostMapping("/transaction/search")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnertransactionsearch())")
+    @Operation(summary = "Service to search balance details", description = "Service to search balance details")
+    public ResponseWrapper<PageResponseDto<PartnersTransaction>> searchPartnerTransaction(
+            @RequestBody @Valid RequestWrapper<SearchDto> request) {
+        ResponseWrapper<PageResponseDto<PartnersTransaction>> responseWrapper = new ResponseWrapper<>();
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE);
+        responseWrapper.setResponse(paymentService.searchPartnerTransaction(request.getRequest()));
+        return responseWrapper;
+    }
+
+    @ResponseFilter
+    @PostMapping("prn/filtervalues")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerfiltervaluesprn())")
+    @Operation(summary = "Service to filter partner details", description = "Service to filter partner details")
+    public ResponseWrapper<FilterResponseCodeDto> filterValuesPrn(
+            @RequestBody @Valid RequestWrapper<FilterValueDto> request) {
+        ResponseWrapper<FilterResponseCodeDto> responseWrapper = new ResponseWrapper<>();
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.FILTER_PARTNER);
+        responseWrapper.setResponse(paymentService.filterValuesPrn(request.getRequest()));
         return responseWrapper;
     }
 }
