@@ -156,5 +156,9 @@ public class AuthorizedRolesDto {
 	private List<String> postpartnertransactionsearch;
 
 	private List<String> postpartnerfiltervaluesprn;
+
+	private List<String> postpartnerprnexport;
+
+	private List<String> postpartnertransactionexport;
 		
 }

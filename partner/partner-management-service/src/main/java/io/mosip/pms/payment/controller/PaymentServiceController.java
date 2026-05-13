@@ -18,6 +18,7 @@ import io.swagger.annotations.Api;
 import io.swagger.v3.oas.annotations.Operation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -131,5 +132,23 @@ public class PaymentServiceController {
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.FILTER_PARTNER);
         responseWrapper.setResponse(paymentService.filterValuesPrn(request.getRequest()));
         return responseWrapper;
+    }
+
+    @PostMapping(value = "/prn/export")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnerprnexport())")
+    @Operation(summary = "Export PRN data as CSV", description = "Exports filtered PRN records as a CSV file")
+    public ResponseEntity<byte[]> exportPrn(
+            @RequestBody @Valid RequestWrapper<SearchDto> request) {
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_PRN);
+        return paymentService.exportPrn(request.getRequest());
+    }
+
+    @PostMapping(value = "/transaction/export")
+    @PreAuthorize("hasAnyRole(@authorizedRoles.getPostpartnertransactionexport())")
+    @Operation(summary = "Export transaction data as CSV", description = "Exports filtered transaction records as a CSV file")
+    public ResponseEntity<byte[]> exportTransaction(
+            @RequestBody @Valid RequestWrapper<SearchDto> request) {
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE);
+        return paymentService.exportTransaction(request.getRequest());
     }
 }
