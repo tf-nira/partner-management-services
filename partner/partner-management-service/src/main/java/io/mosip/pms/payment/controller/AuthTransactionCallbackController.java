@@ -30,7 +30,7 @@ public class AuthTransactionCallbackController {
             @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
-    @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_auth_trn", topic = "${pms.websub.topic.partner.auth.transactions}")
+//    @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_auth_trn", topic = "${pms.websub.topic.partner.auth.transactions}")
     public void insertPartnerAuthTransactionEvent(@RequestBody EventModel eventModel) throws Exception {
         logger.info("Entering Into insertPartnerAuthTransactionEvent..........");
         try {
