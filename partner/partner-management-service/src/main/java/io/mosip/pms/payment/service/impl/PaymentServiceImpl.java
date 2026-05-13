@@ -580,7 +580,7 @@ public class PaymentServiceImpl implements PaymentService {
         List<ColumnCodeValue> columnValueList = new ArrayList<>();
         if(searchHelper.isLoggedInUserFilterRequired()) {
             SearchFilter loggedInUserFilterDto = new SearchFilter();
-            loggedInUserFilterDto.setColumnName("id");
+            loggedInUserFilterDto.setColumnName("requestedEntityId");
             loggedInUserFilterDto.setValue(getLoggedInUserId());
             loggedInUserFilterDto.setType("equals");
             filterValueDto.getOptionalFilters().add(loggedInUserFilterDto);
