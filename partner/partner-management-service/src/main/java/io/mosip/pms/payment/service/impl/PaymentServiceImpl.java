@@ -33,6 +33,14 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestClientException;
+import io.mosip.kernel.core.util.DateUtils;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.io.ByteArrayOutputStream;
+import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
+import java.time.temporal.ChronoUnit;
 
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
@@ -69,6 +77,9 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Value("${pmp.prn.minimumBalanceRequired.value}")
     private double minimumBalanceRequired;
+
+    @Value("${pmp.export.max.days:30}")
+    private long exportMaxDays;
 
     @PostConstruct
     public void init() {
@@ -590,5 +601,124 @@ public class PaymentServiceImpl implements PaymentService {
         }
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.FILTER_PARTNER_SUCCESS);
         return filterResponseDto;
+    }
+
+    @Override
+    public ResponseEntity<byte[]> exportPrn(SearchDto dto) {
+        validateExportDateRange(dto);
+        Pagination exportPagination = new Pagination();
+        exportPagination.setPageStart(0);
+        exportPagination.setPageFetch(Integer.MAX_VALUE);
+        dto.setPagination(exportPagination);
+
+        Page<PartnerPrn> page = searchHelper.search(PartnerPrn.class, dto, null);
+        List<PartnerPrn> records = page.getContent();
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (PrintWriter writer = new PrintWriter(out, true, StandardCharsets.UTF_8)) {
+            writer.println("Partner Name,PRN,Status,Amount,Service Code,Remarks,Created Date");
+            for (PartnerPrn prn : records) {
+                writer.println(String.join(",",
+                        escapeCsv(prn.getPartnerName()),
+                        escapeCsv(prn.getPrn()),
+                        escapeCsv(prn.getStatus()),
+                        escapeCsv(String.valueOf(prn.getAmount())),
+                        escapeCsv(prn.getServiceCode()),
+                        escapeCsv(prn.getRemarks()),
+                        escapeCsv(prn.getCrDtimes() != null ? prn.getCrDtimes().toString() : "")
+
+                ));
+            }
+        }
+
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_PRN_SUCCESS);
+        return buildCsvResponse(out, "prn-export.csv");
+    }
+
+    @Override
+    public ResponseEntity<byte[]> exportTransaction(SearchDto dto) {
+        validateExportDateRange(dto);
+        Pagination exportPagination = new Pagination();
+        exportPagination.setPageStart(0);
+        exportPagination.setPageFetch(Integer.MAX_VALUE);
+        dto.setPagination(exportPagination);
+
+        Page<PartnersTransaction> page = searchHelper.search(PartnersTransaction.class, dto, null);
+        List<PartnersTransaction> records = page.getContent();
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try (PrintWriter writer = new PrintWriter(out, true, StandardCharsets.UTF_8)) {
+            writer.println("Auth Transaction ID,Request Date Time,Request Transaction ID,Service,Status,Partner Name,Entry Type,Amount");
+            for (PartnersTransaction tx : records) {
+                writer.println(String.join(",",
+                        escapeCsv(tx.getId()),
+                        escapeCsv(tx.getRequestDtimes() != null ? tx.getRequestDtimes().toString() : ""),
+                        escapeCsv(tx.getRequestTrnId()),
+                        escapeCsv(tx.getAuthTypeCode()),
+                        escapeCsv(tx.getStatusCode()),
+                        escapeCsv(tx.getRequestedEntityName()),
+                        escapeCsv(tx.getEntryType()),
+                        escapeCsv(String.valueOf(tx.getAmount()))
+                ));
+            }
+        }
+
+        auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE_SUCCESS);
+        return buildCsvResponse(out, "transaction-export.csv");
+    }
+
+    private void validateExportDateRange(SearchDto dto) {
+        SearchFilter betweenFilter = dto.getFilters().stream()
+                .filter(f -> "between".equalsIgnoreCase(f.getType()))
+                .findFirst()
+                .orElseThrow(() -> new PartnerServiceException(
+                        ErrorCode.MISSING_DATE_RANGE_FILTER.getErrorCode(),
+                        ErrorCode.MISSING_DATE_RANGE_FILTER.getErrorMessage()
+                ));
+
+        String fromValue = betweenFilter.getFromValue();
+        String toValue = betweenFilter.getToValue();
+
+        if (fromValue == null || fromValue.isBlank() || toValue == null || toValue.isBlank()) {
+            throw new PartnerServiceException(
+                    ErrorCode.MISSING_DATE_RANGE_FILTER.getErrorCode(),
+                    ErrorCode.MISSING_DATE_RANGE_FILTER.getErrorMessage()
+            );
+        }
+
+        LocalDateTime fromDate = DateUtils.parseToLocalDateTime(fromValue);
+        LocalDateTime toDate = DateUtils.parseToLocalDateTime(toValue);
+
+        if (fromDate.isAfter(toDate)) {
+            throw new PartnerServiceException(
+                    ErrorCode.INVALID_DATE_RANGE.getErrorCode(),
+                    ErrorCode.INVALID_DATE_RANGE.getErrorMessage()
+            );
+        }
+
+        long diffDays = ChronoUnit.DAYS.between(fromDate.toLocalDate(), toDate.toLocalDate());
+        if (diffDays > exportMaxDays) {
+            throw new PartnerServiceException(
+                    ErrorCode.EXPORT_DATE_RANGE_EXCEEDED.getErrorCode(),
+                    String.format(ErrorCode.EXPORT_DATE_RANGE_EXCEEDED.getErrorMessage(), exportMaxDays)
+            );
+        }
+    }
+
+    private ResponseEntity<byte[]> buildCsvResponse(ByteArrayOutputStream out, String filename) {
+        byte[] csvBytes = out.toByteArray();
+        HttpHeaders headers = new HttpHeaders();
+        headers.set(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"");
+        headers.set(HttpHeaders.CONTENT_TYPE, "text/csv; charset=UTF-8");
+        headers.set(HttpHeaders.CONTENT_LENGTH, String.valueOf(csvBytes.length));
+        return new ResponseEntity<>(csvBytes, headers, HttpStatus.OK);
+    }
+
+    private String escapeCsv(String value) {
+        if (value == null) return "";
+        if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+            return "\"" + value.replace("\"", "\"\"") + "\"";
+        }
+        return value;
     }
 }
