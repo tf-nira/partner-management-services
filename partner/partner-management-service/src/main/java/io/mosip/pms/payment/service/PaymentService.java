@@ -13,6 +13,8 @@ import io.mosip.pms.payment.request.dto.PrnRequest;
 import io.mosip.pms.payment.request.dto.ValidatePrnRequest;
 import io.mosip.pms.payment.response.dto.PrnResponse;
 import io.mosip.pms.payment.response.dto.ValidatePrnResponse;
+import org.springframework.http.ResponseEntity;
+
 /**
  *
  * @author Karthik S, Jagadeesh
@@ -39,4 +41,8 @@ public interface PaymentService {
     public void insertPartnersAuthTransaction(EventModel eventModel);
 
     public FilterResponseCodeDto filterValuesPrn(FilterValueDto filterValueDto);
+
+    public ResponseEntity<byte[]> exportPrn(SearchDto dto);
+
+    public ResponseEntity<byte[]> exportTransaction(SearchDto dto);
 }

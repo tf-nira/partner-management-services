@@ -74,7 +74,10 @@ public enum ErrorCode {
 	POLICY_HAVING_MANDATORY_AUTHS("PMS_IDP_003","Policy having mandatory auths. So client can't be created for the same."),
 	CLIENT_NOT_EXISTS("PMS_IDP_004","Client not exists with given id."),
 	PARTNER_HAVING_NO_CLAIMS("PMS_IDP_005","Partner has no user claims"),
-	PARTNER_HAVING_NO_ACRVALUES("PMS_IDP_005","Partner has no Authentication Context Refrences");
+	PARTNER_HAVING_NO_ACRVALUES("PMS_IDP_005","Partner has no Authentication Context Refrences"),
+	MISSING_DATE_RANGE_FILTER("PMS-EXPORT-001", "Date range filter is mandatory for export"),
+	INVALID_DATE_RANGE("PMS-EXPORT-002", "From date cannot be greater than to date"),
+	EXPORT_DATE_RANGE_EXCEEDED("PMS-EXPORT-003", "Export date range cannot exceed %s days");
 	
 	/**
 	 * The error code.
