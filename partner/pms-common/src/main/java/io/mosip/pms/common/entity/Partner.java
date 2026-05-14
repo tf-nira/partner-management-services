@@ -84,6 +84,15 @@ public class Partner implements Serializable {
 	@Column(name = "addl_info")
 	private String additionalInfo;
 
+	@Column(name = "requires_payment")
+	private Boolean requiresPayment;
+
+	@Column(name = "partner_auth_type")
+	private String partnerAuthType;
+
+	@Column(name = "partner_group")
+	private String partnerGroup;
+
 	public Partner() {
 	}
 
@@ -253,6 +262,31 @@ public class Partner implements Serializable {
 	
 	public void setAdditionalInfo(String additionalInfo) {
 		this.additionalInfo = additionalInfo;
+	}
+
+	public Boolean getRequiresPayment() {
+		return this.requiresPayment;
+	}
+
+	public void setRequiresPayment(Boolean requiresPayment) {
+		this.requiresPayment = requiresPayment;
+	}
+
+
+	public String getPartnerAuthType() {
+		return partnerAuthType;
+	}
+
+	public void setPartnerAuthType(String partnerAuthType) {
+		this.partnerAuthType = partnerAuthType;
+	}
+
+	public String getPartnerGroup() {
+		return partnerGroup;
+	}
+
+	public void setPartnerGroup(String partnerGroup) {
+		this.partnerGroup = partnerGroup;
 	}
 
 	public PartnerPolicy addPartnerPolicy(PartnerPolicy partnerPolicy) {

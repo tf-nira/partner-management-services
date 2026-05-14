@@ -38,4 +38,14 @@ public class PartnerRequest{
 	public String partnerType;	
 	
 	public String langCode;
+
+	public Boolean requiresPayment;
+
+	@Size(min = 1, max = 128, message = "Length should be between 1 and 128 chars")
+	public String partnerAuthType;
+
+	@Size(min = 1, max = 128, message = "Length should be between 1 and 128 chars")
+	public String partnerGroup;
+
+
 }

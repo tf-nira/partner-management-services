@@ -35,6 +35,7 @@ public enum ErrorCode {
 	PARTNER_POLICY_TYPE_MISMATCH("PMS_PRT_057","Policy Type Mismatch. Only Auth policy can be used to create OIDC Client."),	
 	EMAIL_EXISTS_IN_KEYCLOAK("PMS_PRT_074","User exists with same email(keycloak)"),
 	PARTNER_DOES_NOT_EXIST_EXCEPTION("PMS_PRT_005","Partner does not exist"),
+	PARTNER_DOES_NOT_HAVE_MINIMUM_BALANCE_EXCEPTION("PMS_PRT_007","Insufficient balance. Please add funds to meet the minimum balance requirement."),
 	PARTNER_API_KET_REQ_DOES_NOT_EXIST_EXCEPTION("PMS_PRT_006","No api key req exist"),
 	PARTNER_API_NOT_CREATED_EXCEPTION("PMS_PRT_105","Partner API KEY is not Created"),
 	PARTNER_ALREADY_REG_WITH_SAME_PLICYGROUP("PMS_PRT_001","Partner is already registered with Same policy Group"),
@@ -48,6 +49,7 @@ public enum ErrorCode {
 	API_NULL_RESPONSE_EXCEPTION("PMS_PRT_107","Responese from the api is null"),
 	UNABLE_TO_PROCESS("PMS_PRT_500","Unable to process the request."),
 	PARTNER_NOT_ACTIVE_EXCEPTION("PMS_PMP_016","Partner is not active."),
+	PARTNER_NOT_REQUIRED_PAYMENT_EXCEPTION("PMS_PMP_017","Payment is not required for this partner."),
 	POLICY_GROUP_POLICY_NOT_EXISTS("PMS_PRT_098","Given policy under partner's policy group not exists."),
 	POLICY_NOT_ACTIVE_EXCEPTION("PMS_PMP_019","Policy is not active."),
 	POLICY_GROUP_NOT_ACTIVE("PMS_PMP_023","Policy group is not active."),
@@ -72,7 +74,10 @@ public enum ErrorCode {
 	POLICY_HAVING_MANDATORY_AUTHS("PMS_IDP_003","Policy having mandatory auths. So client can't be created for the same."),
 	CLIENT_NOT_EXISTS("PMS_IDP_004","Client not exists with given id."),
 	PARTNER_HAVING_NO_CLAIMS("PMS_IDP_005","Partner has no user claims"),
-	PARTNER_HAVING_NO_ACRVALUES("PMS_IDP_005","Partner has no Authentication Context Refrences");
+	PARTNER_HAVING_NO_ACRVALUES("PMS_IDP_005","Partner has no Authentication Context Refrences"),
+	MISSING_DATE_RANGE_FILTER("PMS-EXPORT-001", "Date range filter is mandatory for export"),
+	INVALID_DATE_RANGE("PMS-EXPORT-002", "From date cannot be greater than to date"),
+	EXPORT_DATE_RANGE_EXCEEDED("PMS-EXPORT-003", "Export date range cannot exceed %s days");
 	
 	/**
 	 * The error code.

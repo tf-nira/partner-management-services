@@ -2,6 +2,7 @@ package io.mosip.pms.common.dto;
 
 import lombok.Data;
 
+
 @Data
 public class PartnerDataPublishDto {
 
@@ -12,4 +13,10 @@ public class PartnerDataPublishDto {
 	private String certificateData;
 	
 	private String partnerStatus;
+
+	private Boolean requiresPayment;
+
+	private String partnerAuthType;
+
+	private String partnerGroup;
 }
