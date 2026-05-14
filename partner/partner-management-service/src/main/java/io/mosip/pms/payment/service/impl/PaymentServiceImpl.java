@@ -610,6 +610,13 @@ public class PaymentServiceImpl implements PaymentService {
         exportPagination.setPageStart(0);
         exportPagination.setPageFetch(Integer.MAX_VALUE);
         dto.setPagination(exportPagination);
+        if (searchHelper.isLoggedInUserFilterRequired()) {
+            SearchFilter partnerFilter = new SearchFilter();
+            partnerFilter.setColumnName("partnerId");
+            partnerFilter.setType("equals");
+            partnerFilter.setValue(getLoggedInUserId());
+            dto.getFilters().add(partnerFilter);
+        }
 
         Page<PartnerPrn> page = searchHelper.search(PartnerPrn.class, dto, null);
         List<PartnerPrn> records = page.getContent();
@@ -642,6 +649,14 @@ public class PaymentServiceImpl implements PaymentService {
         exportPagination.setPageStart(0);
         exportPagination.setPageFetch(Integer.MAX_VALUE);
         dto.setPagination(exportPagination);
+
+        if (searchHelper.isLoggedInUserFilterRequired()) {
+            SearchFilter partnerFilter = new SearchFilter();
+            partnerFilter.setColumnName("requestedEntityId");
+            partnerFilter.setType("equals");
+            partnerFilter.setValue(getLoggedInUserId());
+            dto.getFilters().add(partnerFilter);
+        }
 
         Page<PartnersTransaction> page = searchHelper.search(PartnersTransaction.class, dto, null);
         List<PartnersTransaction> records = page.getContent();
