@@ -131,17 +131,20 @@ public class KeycloakImpl{
 
 	private void roleMapper(String userID, String realmId, String roleId) {
 		Map<String, String> pathParams = new HashMap<>();
-
+		LOGGER.info("role mapper for the user");
+		LOGGER.info("roleId : " + roleId + " realmId : " + realmId + " userID : " + userID);
 		pathParams.put("realmId", realmId);
 		pathParams.put("userID", userID);
 		try {			
 			individualRoleID = getRoleId(roleId,realmId);
+			LOGGER.info("individualRoleID : " + individualRoleID);
 		}
 		catch(Exception ex){
 			LOGGER.error("Role " + roleId + " not found in " + realmId + " for user " + userID);
 		}
 		
 		Roles role = new Roles(individualRoleID, roleId);
+		LOGGER.info("role : " + role);
 		List<Roles> roles = new ArrayList<>();
 		roles.add(role);
 		pathParams.put("realmId", realmId);
