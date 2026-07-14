@@ -222,6 +222,9 @@ public class PaymentServiceImpl implements PaymentService {
                 saveIntoPartnersTransaction(transaction);
                 addBalance(request, response);
                 LOGGER.info("Successfully processed payment and balance for PRN: {}", request.getPrn());
+            } else {
+                throw new PartnerServiceException(ErrorCode.PARTNER_PRN_CONSUMED_EXCEPTION.getErrorCode(),
+                        ErrorCode.PARTNER_PRN_CONSUMED_EXCEPTION.getErrorMessage());
             }
         }
         else {
