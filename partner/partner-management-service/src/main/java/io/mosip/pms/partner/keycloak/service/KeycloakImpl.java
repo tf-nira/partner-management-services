@@ -131,7 +131,7 @@ public class KeycloakImpl{
 
 	private void roleMapper(String userID, String realmId, String roleId) {
 		Map<String, String> pathParams = new HashMap<>();
-
+		
 		pathParams.put("realmId", realmId);
 		pathParams.put("userID", userID);
 		try {			
