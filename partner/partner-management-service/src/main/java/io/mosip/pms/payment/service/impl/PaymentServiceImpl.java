@@ -45,6 +45,8 @@ import java.time.temporal.ChronoUnit;
 import javax.annotation.PostConstruct;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
+
 /**
  *
  * @author Karthik S, Jagadeesh
@@ -395,6 +397,20 @@ public class PaymentServiceImpl implements PaymentService {
             pageDto = pageUtils.sortPage(partnerBalances, dto.getSort(), dto.getPagination(), page.getTotalElements());
         }
         auditUtil.setAuditRequestDto(PartnerServiceAuditEnum.SEARCH_PARTNER_BALANCE_SUCCESS);
+        if (pageDto.getData() != null && !pageDto.getData().isEmpty()) {
+            List<String> partnerIds = pageDto.getData().stream()
+                    .map(PartnerBalance::getPartnerId)
+                    .collect(Collectors.toList());
+            List<Partner> partners = partnerRepository.findByPartnerIds(partnerIds);
+            Map<String, String> partnerNameMap = partners.stream()
+                    .collect(Collectors.toMap(Partner::getId, Partner::getName));
+            for (PartnerBalance balance : pageDto.getData()) {
+                String partnerName = partnerNameMap.get(balance.getPartnerId());
+                if (partnerName != null && !partnerName.isEmpty()) {
+                    balance.setPartnerId(partnerName);
+                }
+            }
+        }
         return pageDto;
     }
 
