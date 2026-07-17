@@ -74,6 +74,7 @@ public class WebSubPublisher {
 			subscriptionRequest.setCallbackURL(callbackUrlSettled);
 			subscriptionRequest.setHubURL(hubURL);
 			subscriptionRequest.setSecret(callbackSecret);
+			logger.info("callbackSecret... "+ callbackSecret);
 			subscriptionRequest.setTopic(ackTopic);
 			logger.info("subscribing... settled");
 			subscriptionClient.subscribe(subscriptionRequest);
