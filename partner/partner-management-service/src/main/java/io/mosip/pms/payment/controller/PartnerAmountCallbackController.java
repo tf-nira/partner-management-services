@@ -1,5 +1,6 @@
 package io.mosip.pms.payment.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.kernel.websub.api.annotation.PreAuthenticateContentAndVerifyIntent;
@@ -15,6 +16,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
@@ -59,10 +61,53 @@ public class PartnerAmountCallbackController {
 //        }
 //    }
 
+//    @PostMapping(path = "/callback/partnermanagement/partners_amount_ack", consumes = MediaType.APPLICATION_JSON_VALUE)
+//    public void prnStatusUpdateEvent(
+//            @RequestBody EventModel eventModel,
+//            HttpServletRequest request) throws Exception {
+//
+//        logger.info("===== Entered prnStatusUpdateEvent callback =====");
+//
+//        // Log request details
+//        logger.info("Method      : {}", request.getMethod());
+//        logger.info("Request URI : {}", request.getRequestURI());
+//        logger.info("Remote Host : {}", request.getRemoteAddr());
+//
+//        // Log all headers
+//        Enumeration<String> headerNames = request.getHeaderNames();
+//        while (headerNames.hasMoreElements()) {
+//            String header = headerNames.nextElement();
+//            logger.info("Header [{}] = {}", header, request.getHeader(header));
+//        }
+//
+//        // Log the WebSub signature separately
+//        logger.info("x-hub-signature = {}", request.getHeader("x-hub-signature"));
+//
+//        // Log the payload
+//        logger.info("Received Event : {}", eventModel);
+//
+//        try {
+//            paymentService.prnStatusUpdateIda(eventModel);
+//            logger.info("Successfully processed partner amount acknowledgement.");
+//        } catch (Exception e) {
+//            logger.error("Exception while processing callback", e);
+//            throw e;
+//        }
+//
+//        logger.info("===== Exiting prnStatusUpdateEvent callback =====");
+//    }
+
     @PostMapping(path = "/callback/partnermanagement/partners_amount_ack", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public void prnStatusUpdateEvent(
-            @RequestBody EventModel eventModel,
-            HttpServletRequest request) throws Exception {
+    @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Request authenticated successfully"),
+            @ApiResponse(responseCode = "201", description = "Created", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
+    @PreAuthenticateContentAndVerifyIntent(
+            secret = "${partner-websub-ida-partner-service-callback-secret}",
+            callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack",
+            topic = "${pms.websub.topic.partner.amount.updated.ack}")
+    public void prnStatusUpdateEvent(HttpServletRequest request) throws Exception {
 
         logger.info("===== Entered prnStatusUpdateEvent callback =====");
 
@@ -81,7 +126,14 @@ public class PartnerAmountCallbackController {
         // Log the WebSub signature separately
         logger.info("x-hub-signature = {}", request.getHeader("x-hub-signature"));
 
-        // Log the payload
+        // Body was already consumed by the WebSub verifier; the caching wrapper
+        // retained the bytes, so read from there instead of the raw stream.
+        ContentCachingRequestWrapper cachingRequest = (ContentCachingRequestWrapper) request;
+        byte[] cachedBody = cachingRequest.getContentAsByteArray();
+
+        ObjectMapper mapper = new ObjectMapper();
+        EventModel eventModel = mapper.readValue(cachedBody, EventModel.class);
+
         logger.info("Received Event : {}", eventModel);
 
         try {
@@ -94,7 +146,6 @@ public class PartnerAmountCallbackController {
 
         logger.info("===== Exiting prnStatusUpdateEvent callback =====");
     }
-
 
     @PostMapping(path = "/callback/partnermanagement/partners_balance_update", consumes = MediaType.APPLICATION_JSON_VALUE)
     @ApiResponses(value = {@ApiResponse(responseCode = "200", description = "Request authenticated successfully"),
