@@ -23,6 +23,7 @@ on:
       - tf_nira_payment
       - tf_nira_dev
       - tf_nira_preprod
+      - kytest
 
 jobs:
   build-maven-partner:
