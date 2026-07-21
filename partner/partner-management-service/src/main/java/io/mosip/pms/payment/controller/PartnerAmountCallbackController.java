@@ -1,5 +1,6 @@
 package io.mosip.pms.payment.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.mosip.kernel.core.logger.spi.Logger;
 import io.mosip.kernel.core.websub.model.EventModel;
 import io.mosip.kernel.websub.api.annotation.PreAuthenticateContentAndVerifyIntent;
@@ -15,9 +16,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.annotation.PostConstruct;
-
+import javax.servlet.http.HttpServletRequest;
 
 
 @RestController
@@ -47,8 +49,13 @@ public class PartnerAmountCallbackController {
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
     @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_amount_ack", topic = "${pms.websub.topic.partner.amount.updated.ack}")
-    public void prnStatusUpdateEvent(@RequestBody EventModel eventModel) throws Exception {
+    public void prnStatusUpdateEvent(HttpServletRequest request) throws Exception {
         logger.info("Enterring Into prnStatusUpdateEvent..........");
+        ContentCachingRequestWrapper cachingRequest = (ContentCachingRequestWrapper) request;
+        byte[] cachedBody = cachingRequest.getContentAsByteArray();
+
+        ObjectMapper mapper = new ObjectMapper();
+        EventModel eventModel = mapper.readValue(cachedBody, EventModel.class);
         try {
             paymentService.prnStatusUpdateIda(eventModel);
         } catch (Exception e) {
@@ -66,8 +73,13 @@ public class PartnerAmountCallbackController {
             @ApiResponse(responseCode = "403", description = "Forbidden", content = @Content(schema = @Schema(hidden = true))),
             @ApiResponse(responseCode = "404", description = "Not Found", content = @Content(schema = @Schema(hidden = true)))})
    @PreAuthenticateContentAndVerifyIntent(secret = "${partner-websub-ida-partner-service-callback-secret}", callback = "/v1/partnermanager/callback/partnermanagement/partners_balance_update", topic = "${pms.websub.topic.partner.balance.updated}")
-    public void partnersBalanceUpdateEvent(@RequestBody EventModel eventModel) throws Exception {
+    public void partnersBalanceUpdateEvent(HttpServletRequest request) throws Exception {
         logger.info("Enterring Into partnersBalanceUpdateIda..........");
+        ContentCachingRequestWrapper cachingRequest = (ContentCachingRequestWrapper) request;
+        byte[] cachedBody = cachingRequest.getContentAsByteArray();
+
+        ObjectMapper mapper = new ObjectMapper();
+        EventModel eventModel = mapper.readValue(cachedBody, EventModel.class);
         try {
             paymentService.partnersBalanceUpdateIda(eventModel);
         } catch (Exception e) {
