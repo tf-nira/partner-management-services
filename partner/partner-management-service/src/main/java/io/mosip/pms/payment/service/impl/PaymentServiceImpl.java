@@ -646,7 +646,7 @@ public class PaymentServiceImpl implements PaymentService {
             for (PartnerPrn prn : records) {
                 writer.println(String.join(",",
                         escapeCsv(prn.getPartnerName()),
-                        escapeCsv(prn.getPrn()),
+                        escapeCsv("=\"" + prn.getPrn() + "\""),
                         escapeCsv(prn.getStatus()),
                         escapeCsv(String.valueOf(prn.getAmount())),
                         escapeCsv(prn.getServiceCode()),
@@ -687,7 +687,7 @@ public class PaymentServiceImpl implements PaymentService {
                 writer.println(String.join(",",
                         escapeCsv(tx.getId()),
                         escapeCsv(tx.getRequestDtimes() != null ? tx.getRequestDtimes().toString() : ""),
-                        escapeCsv(tx.getRequestTrnId()),
+                        escapeCsv("=\"" + tx.getRequestTrnId() + "\""),
                         escapeCsv(tx.getAuthTypeCode()),
                         escapeCsv(tx.getStatusCode()),
                         escapeCsv(tx.getRequestedEntityName()),
