@@ -682,7 +682,7 @@ public class PaymentServiceImpl implements PaymentService {
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try (PrintWriter writer = new PrintWriter(out, true, StandardCharsets.UTF_8)) {
-            writer.println("Auth Transaction ID,Request Date Time,Request Transaction ID,Service,Status,Partner Name,Entry Type,Amount");
+            writer.println("Transaction ID,Request Date Time,Request Transaction ID,Service,Status,Partner Name,Entry Type,Amount");
             for (PartnersTransaction tx : records) {
                 writer.println(String.join(",",
                         escapeCsv(tx.getId()),
