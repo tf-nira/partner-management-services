@@ -81,11 +81,11 @@
 			<version>5.3.3.RELEASE</version>
 			<scope>test</scope>
 		</dependency>	
-		<dependency>
-			<groupId>io.mosip.kernel</groupId>
-			<artifactId>kernel-authcodeflowproxy-api</artifactId>
-			<version>${kernel.version}</version>
-		</dependency>
+<!--		<dependency>-->
+<!--			<groupId>io.mosip.kernel</groupId>-->
+<!--			<artifactId>kernel-authcodeflowproxy-api</artifactId>-->
+<!--			<version>${kernel.version}</version>-->
+<!--		</dependency>-->
 	</dependencies>
 	<build>
 		<plugins>
